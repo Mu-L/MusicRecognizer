@@ -1,0 +1,3 @@
+* Support long press on the quick settings tile for the alternative mode (e.g., recognizing device audio)
+* Minor bug fixes
+* Update translations
