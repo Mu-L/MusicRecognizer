@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.service.notification.StatusBarNotification
 import androidx.core.app.ActivityCompat.checkSelfPermission
 import androidx.core.app.NotificationCompat
+import com.mrsep.musicrecognizer.core.domain.preferences.AudioCaptureMode
 import com.mrsep.musicrecognizer.core.domain.recognition.ResultNotificationManager
 import com.mrsep.musicrecognizer.core.domain.recognition.TrackMetadataFetchManager
 import com.mrsep.musicrecognizer.core.domain.recognition.model.EnqueuedRecognition
@@ -46,17 +47,27 @@ class ResultNotificationHelper @Inject constructor(
     private val notificationManager = appContext
         .getSystemService(Service.NOTIFICATION_SERVICE) as NotificationManager
 
-    suspend fun notifyForegroundResult(result: RecognitionResult) {
+    suspend fun notifyForegroundResult(
+        result: RecognitionResult,
+        usedAudioCaptureMode: AudioCaptureMode,
+    ) {
         if (appContext.isPostNotificationPermissionDenied()) return
-        notify(result, NOTIFICATION_CHANNEL_ID_FOREGROUND_RESULT)
+        notify(result, NOTIFICATION_CHANNEL_ID_FOREGROUND_RESULT, usedAudioCaptureMode)
     }
 
-    suspend fun notifyBackgroundResult(result: RecognitionResult) {
+    suspend fun notifyBackgroundResult(
+        result: RecognitionResult,
+        usedAudioCaptureMode: AudioCaptureMode,
+    ) {
         if (appContext.isPostNotificationPermissionDenied()) return
-        notify(result, NOTIFICATION_CHANNEL_ID_BACKGROUND_RESULT)
+        notify(result, NOTIFICATION_CHANNEL_ID_BACKGROUND_RESULT, usedAudioCaptureMode)
     }
 
-    private suspend fun notify(result: RecognitionResult, channelId: String) {
+    private suspend fun notify(
+        result: RecognitionResult,
+        channelId: String,
+        usedAudioCaptureMode: AudioCaptureMode,
+    ) {
         var notificationTag: String? = null
         val groupKey = groupKeyForChannel(channelId)
         val notificationBuilder = when (result) {
@@ -148,7 +159,7 @@ class ResultNotificationHelper @Inject constructor(
                             .bigText(bigText)
                     )
                     .setContentIntent(
-                        RecognitionControlActivity.startRecognitionWithPermissionRequestPendingIntent(appContext)
+                        RecognitionControlActivity.startRecognitionWithPermissionRequestPendingIntent(appContext, usedAudioCaptureMode)
                     )
             }
 

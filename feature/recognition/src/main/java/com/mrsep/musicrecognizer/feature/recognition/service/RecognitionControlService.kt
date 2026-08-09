@@ -384,11 +384,12 @@ class RecognitionControlService : Service() {
                         if (recognitionResult is RecognitionResult.Success) {
                             prepareTrackImages(recognitionResult.track)
                         }
+                        val usedAudioCaptureMode = audioCaptureServiceMode.toCaptureMode()
                         val isScreenUpdated = screenStatusHolder.updateStatusIfObserving(status)
                         if (isScreenUpdated) {
                             floatingButtonStatusHolder.updateStatus(RecognitionStatus.Ready)
                             widgetStatusHolder.updateStatus(RecognitionStatus.Ready)
-                            resultNotificationHelper.notifyForegroundResult(status.result)
+                            resultNotificationHelper.notifyForegroundResult(status.result, usedAudioCaptureMode)
                         } else {
                             val isFloatingButtonUpdated = floatingButtonStatusHolder.updateStatusIfObserving(status)
                             if (!isFloatingButtonUpdated) {
@@ -401,9 +402,9 @@ class RecognitionControlService : Service() {
                                 widgetStatusHolder.updateStatus(RecognitionStatus.Ready)
                             }
                             if (isFloatingButtonUpdated) {
-                                resultNotificationHelper.notifyForegroundResult(status.result)
+                                resultNotificationHelper.notifyForegroundResult(status.result, usedAudioCaptureMode)
                             } else {
-                                resultNotificationHelper.notifyBackgroundResult(status.result)
+                                resultNotificationHelper.notifyBackgroundResult(status.result, usedAudioCaptureMode)
                             }
                         }
                         requestWidgetsUpdate()
@@ -658,4 +659,10 @@ sealed class AudioCaptureServiceMode : Parcelable {
     data object Microphone : AudioCaptureServiceMode()
     data class Device(val mediaProjectionData: Intent?) : AudioCaptureServiceMode()
     data class Auto(val mediaProjectionData: Intent?) : AudioCaptureServiceMode()
+}
+
+private fun AudioCaptureServiceMode.toCaptureMode() = when (this) {
+    AudioCaptureServiceMode.Microphone -> AudioCaptureMode.Microphone
+    is AudioCaptureServiceMode.Device -> AudioCaptureMode.Device
+    is AudioCaptureServiceMode.Auto -> AudioCaptureMode.Auto
 }
