@@ -62,6 +62,10 @@ android {
         // Excluded unfinished translations: "az", "br", "ca", "el", "fa", "gu", "ro", "vi"
         localeFilters += listOf("en", "ar", "cs", "de", "es", "et", "fr", "gl", "hu", "in", "it", "iw", "ja", "nl", "pl", "pt", "pt-rBR", "ru", "sk", "tr", "uk", "zh-rCN")
     }
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 // ./gradlew app:exportLibraryDefinitions
