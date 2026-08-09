@@ -3,6 +3,7 @@ package com.mrsep.musicrecognizer.feature.recognition.service
 import android.Manifest
 import android.app.AlertDialog
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
@@ -13,6 +14,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.service.quicksettings.TileService
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,48 +112,81 @@ class RecognitionControlActivity : ComponentActivity() {
         }
     }
 
-
     override fun onStart() {
         super.onStart()
         if (intentHandled) return
-        when (val action = intent.action) {
-            ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST,
-            ACTION_SHOW_FLOATING_BUTTON -> lifecycleScope.launch {
-                if (action == ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST) {
-                    val preferences = preferencesRepository.userPreferencesFlow.first()
-                    val intentMode = intent.getStringExtra(EXTRA_AUDIO_CAPTURE_MODE)?.let { modeName ->
-                        runCatching { AudioCaptureMode.valueOf(modeName) }.getOrNull()
-                    }
-                    requestedAudioCaptureMode = intentMode ?: preferences.defaultAudioCaptureMode
-                    useAltDeviceSoundSource = preferences.useAltDeviceSoundSource
+        val action = intent?.action
+        if (action == null) {
+            Log.e(TAG, "Started with null intent action")
+            finish()
+            return
+        }
+        lifecycleScope.launch {
+            if (action == ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST ||
+                action == TileService.ACTION_QS_TILE_PREFERENCES) {
+                loadCaptureModePreferences(action)
+            }
+            when (action) {
+                ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST,
+                TileService.ACTION_QS_TILE_PREFERENCES,
+                ACTION_SHOW_FLOATING_BUTTON -> {
+                    checkAndRequestPermissions(action)
                 }
-                val requiredPermissions = getRequiredPermissionsForRecognition()
-                if (checkPermissionsGranted(requiredPermissions)) {
-                    onPermissionsGranted(action)
-                } else {
-                    val shouldShowRationale = requiredPermissions
-                        .any { shouldShowRequestPermissionRationale(it) }
-                    if (shouldShowRationale) {
-                        showPermissionsRationaleDialog()
-                    } else {
-                        requestPermissionLauncher.launch(requiredPermissions)
-                    }
+                else -> {
+                    Log.e(TAG, "Unknown intent action: $action")
+                    finish()
                 }
             }
-
-            else -> error("Unknown intent action")
         }
         intentHandled = true
     }
 
+    private suspend fun loadCaptureModePreferences(action: String) {
+        val preferences = preferencesRepository.userPreferencesFlow.first()
+        useAltDeviceSoundSource = preferences.useAltDeviceSoundSource
+        requestedAudioCaptureMode = when (action) {
+            ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST -> {
+                val intentMode = intent.getStringExtra(EXTRA_AUDIO_CAPTURE_MODE)?.let { modeName ->
+                    runCatching { AudioCaptureMode.valueOf(modeName) }.getOrNull()
+                }
+                intentMode ?: preferences.defaultAudioCaptureMode
+            }
+            TileService.ACTION_QS_TILE_PREFERENCES -> {
+                val tileClassName = getClickedTileClassName(intent)
+                check(tileClassName == OneTimeRecognitionTileService::class.java.name)
+                preferences.mainButtonLongPressAudioCaptureMode
+            }
+            else -> preferences.defaultAudioCaptureMode
+        }
+    }
+
+    private fun checkAndRequestPermissions(action: String) {
+        val requiredPermissions = getRequiredPermissionsForRecognition()
+        if (checkPermissionsGranted(requiredPermissions)) {
+            onPermissionsGranted(action)
+        } else {
+            val shouldShowRationale = requiredPermissions
+                .any { shouldShowRequestPermissionRationale(it) }
+            if (shouldShowRationale) {
+                showPermissionsRationaleDialog()
+            } else {
+                requestPermissionLauncher.launch(requiredPermissions)
+            }
+        }
+    }
+
     private fun onPermissionsGranted(action: String?) = when (action) {
+        TileService.ACTION_QS_TILE_PREFERENCES,
         ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST -> {
             onLaunchRecognition()
         }
-        ACTION_SHOW_FLOATING_BUTTON -> lifecycleScope.launch {
-            onShowFloatingButton()
+        ACTION_SHOW_FLOATING_BUTTON -> {
+            lifecycleScope.launch { onShowFloatingButton() }
         }
-        else -> error("Unknown intent action")
+        else -> {
+            Log.e(TAG, "Permissions granted for unknown action: $action")
+            finish()
+        }
     }
 
     private fun onLaunchRecognition() {
@@ -166,7 +201,7 @@ class RecognitionControlActivity : ComponentActivity() {
                 val intent = mediaProjectionManager.createScreenCaptureIntentForDisplay()
                 requestMediaProjectionLauncher.launch(intent)
             } else {
-                Log.w(this::class.java.simpleName, "AudioPlaybackCapture API is available on Android 10+")
+                Log.w(TAG, "AudioPlaybackCapture API is available on Android 10+")
                 finish()
             }
         }
@@ -284,6 +319,16 @@ class RecognitionControlActivity : ComponentActivity() {
         }
     }
 
+    private fun getClickedTileClassName(intent: Intent): String? {
+        val componentName = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME, ComponentName::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableExtra(Intent.EXTRA_COMPONENT_NAME) as? ComponentName
+        }
+        return componentName?.className
+    }
+
     companion object {
         private const val ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST = "com.mrsep.musicrecognizer.control_activity.action.launch_recognition_permissions"
         private const val ACTION_SHOW_FLOATING_BUTTON = "com.mrsep.musicrecognizer.control_activity.action.show_floating_button"
@@ -301,7 +346,7 @@ class RecognitionControlActivity : ComponentActivity() {
         }
 
         fun startRecognitionWithPermissionRequestIntent(
-            context: Context, 
+            context: Context,
             audioCaptureMode: AudioCaptureMode? = null
         ): Intent {
             return Intent(context, RecognitionControlActivity::class.java).apply {
