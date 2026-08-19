@@ -12,11 +12,19 @@ import com.mrsep.musicrecognizer.core.metadata.tracklink.TrackLinksSource
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.header
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpHeaders
+import io.ktor.http.encodeURLPathPart
 import io.ktor.http.isSuccess
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import java.io.IOException
 import javax.inject.Inject
 
@@ -24,6 +32,7 @@ class OdesliTrackLinksFetcher @Inject constructor(
     private val httpClientLazy: dagger.Lazy<HttpClient>,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val localeProvider: LocaleProvider,
+    private val json: Json,
 ) : TrackLinksFetcher {
 
     override val source = TrackLinksSource.Odesli
@@ -52,13 +61,22 @@ class OdesliTrackLinksFetcher @Inject constructor(
         val hasAllLinks = supportedServices.all(track.trackLinks::contains)
         if (hasAllLinks) return NetworkResult.Success(RemoteTrackLinks())
 
-        val country = localeProvider.get().country.ifEmpty { "us" }
+        return if (API_KEY.isNotBlank()) {
+            fetchFromApi(track, queryUrl)
+        } else {
+            fetchFromHtml(track, queryUrl)
+        }
+    }
+
+    private suspend fun fetchFromApi(track: Track, queryUrl: String): NetworkResult<RemoteTrackLinks> {
         return withContext(ioDispatcher) {
             val httpClient = httpClientLazy.get()
             val response = try {
-                httpClient.get("https://api.song.link/v1-alpha.1/links") {
+                httpClient.get("https://api.odesli.co/v1-alpha.1/links") {
+                    parameter("key", API_KEY)
                     parameter("url", queryUrl)
-                    parameter("userCountry", country)
+                    // Link count and IDs depend on requested country
+                    parameter("userCountry", localeProvider.get().country.ifEmpty { "us" })
                     parameter("songIfSingle", "true")
                 }
             } catch (e: IOException) {
@@ -69,11 +87,13 @@ class OdesliTrackLinksFetcher @Inject constructor(
                     val successDto: OdesliResponseJson = response.body()
                     val trackLinks = successDto.toTrackLinks()
                     val artworkUrl = track.artworkUrl ?: successDto.toArtworkUrl()
-                    NetworkResult.Success(RemoteTrackLinks(
-                        artworkThumbUrl = null,
-                        artworkUrl = artworkUrl,
-                        trackLinks = trackLinks
-                    ))
+                    NetworkResult.Success(
+                        RemoteTrackLinks(
+                            artworkThumbUrl = null,
+                            artworkUrl = artworkUrl,
+                            trackLinks = trackLinks
+                        )
+                    )
                 } else {
                     val errorDto: OdesliErrorResponseJson = response.body()
                     NetworkError.HttpError(
@@ -89,6 +109,169 @@ class OdesliTrackLinksFetcher @Inject constructor(
                 )
             }
         }
+    }
+
+    private suspend fun fetchFromHtml(track: Track, queryUrl: String): NetworkResult<RemoteTrackLinks> {
+        return withContext(ioDispatcher) {
+            val httpClient = httpClientLazy.get()
+            val response = try {
+                // Link count and IDs depend on country from requester's IP
+                httpClient.get("https://song.link/${queryUrl.encodeURLPathPart()}") {
+                    header(HttpHeaders.UserAgent, USER_AGENT_WEB)
+                    header(HttpHeaders.Accept, ACCEPT_HTML)
+                    header(HttpHeaders.AcceptLanguage, ACCEPT_LANGUAGE)
+                    header(HttpHeaders.Referrer, REFERER_GOOGLE)
+                }
+            } catch (e: IOException) {
+                return@withContext NetworkError.BadConnection(e.message)
+            }
+            try {
+                if (response.status.isSuccess()) {
+                    val html = response.bodyAsText()
+                    val document = Jsoup.parse(html)
+
+                    val nextData = document.parseNextData()
+                    val trackLinks = nextData?.toTrackLinks() ?: document.toTrackLinks()
+                    val artworkUrl = track.artworkUrl ?: nextData?.toArtworkLink() ?: document.toArtworkLink()
+
+                    NetworkResult.Success(
+                        RemoteTrackLinks(
+                            artworkThumbUrl = null,
+                            artworkUrl = artworkUrl,
+                            trackLinks = trackLinks
+                        )
+                    )
+                } else {
+                    NetworkError.HttpError(
+                        code = response.status.value,
+                        message = response.status.description
+                    )
+                }
+            } catch (e: Exception) {
+                ensureActive()
+                NetworkError.UnhandledError(
+                    message = e.message ?: "",
+                    cause = e
+                )
+            }
+        }
+    }
+
+    // ========== JSON Parsing ==========
+
+    private fun Document.parseNextData(): OdesliNextDataJson? {
+        val script = selectFirst("script#__NEXT_DATA__[type=application/json]")
+            ?: return null
+        val payload = script.data().takeIf { it.isNotBlank() }
+            ?: return null
+        return try {
+            check(json.configuration.ignoreUnknownKeys)
+            json.decodeFromString<OdesliNextDataJson>(payload)
+        } catch (_: SerializationException) {
+            null
+        }
+    }
+
+    private fun OdesliNextDataJson.toTrackLinks(): Map<MusicService, String> {
+        val result = mutableMapOf<MusicService, String>()
+        val sections = props?.pageProps?.pageData?.sections.orEmpty()
+        sections.forEach { section ->
+            section.links.orEmpty().forEach { link ->
+//                if (link.show == false) return@forEach
+                if (link.platform == null) return@forEach
+                val url = link.url?.trim()?.takeIf { it.isNotBlank() } ?: return@forEach
+                val service = musicServiceFromJson(link.platform) ?: return@forEach
+                if (!result.containsKey(service)) {
+                    result[service] = url
+                }
+            }
+        }
+        return result
+    }
+
+    private fun OdesliNextDataJson.toArtworkLink(): String? {
+        val entity = props?.pageProps?.pageData?.entityData ?: return null
+        val url = entity.thumbnailUrl?.trim()?.takeIf { it.isNotBlank() } ?: return null
+        val width = entity.thumbnailWidth
+        val height = entity.thumbnailHeight
+        return if (width != null && height != null && width >= 500 && height >= 500) {
+            url
+        } else {
+            null
+        }
+    }
+
+    private fun musicServiceFromJson(platform: String): MusicService? {
+        return when (platform.lowercase()) {
+            "amazonmusic" -> MusicService.AmazonMusic
+            "anghami" -> MusicService.Anghami
+            "applemusic" -> MusicService.AppleMusic
+            "audiomack" -> MusicService.Audiomack
+            "audius" -> MusicService.Audius
+            "boomplay" -> MusicService.Boomplay
+            "deezer" -> MusicService.Deezer
+            "napster" -> MusicService.Napster
+            "pandora" -> MusicService.Pandora
+            "soundcloud" -> MusicService.Soundcloud
+            "spotify" -> MusicService.Spotify
+            "tidal" -> MusicService.Tidal
+            "yandex" -> MusicService.YandexMusic
+            "youtube" -> MusicService.Youtube
+            "youtubemusic" -> MusicService.YoutubeMusic
+            else -> null
+        }
+    }
+
+    // ========== HTML Parsing ==========
+
+    private fun Document.toTrackLinks(): Map<MusicService, String> {
+        val result = mutableMapOf<MusicService, String>()
+        val linkElements = select("a[data-test-id=link]")
+        for (element in linkElements) {
+            val ariaLabel = element.attr("aria-label")
+            if (!ariaLabel.contains("Listen", ignoreCase = true)) {
+                continue
+            }
+            val url = element.absUrl("href").ifBlank { element.attr("href") }
+                .trim()
+                .takeIf { it.isNotBlank() }
+                ?: continue
+            val service = musicServiceFromAriaLabel(ariaLabel) ?: continue
+            if (!result.containsKey(service)) {
+                result[service] = url
+            }
+        }
+
+        return result
+    }
+
+    private fun musicServiceFromAriaLabel(label: String): MusicService? {
+        return when {
+            label.contains("apple music", ignoreCase = true) -> MusicService.AppleMusic
+            label.contains("spotify", ignoreCase = true) -> MusicService.Spotify
+            label.contains("amazon music", ignoreCase = true) -> MusicService.AmazonMusic
+            // Parse YouTube Music before YouTube
+            label.contains("youtube music", ignoreCase = true) -> MusicService.YoutubeMusic
+            label.contains("youtube", ignoreCase = true) -> MusicService.Youtube
+            label.contains("deezer", ignoreCase = true) -> MusicService.Deezer
+            label.contains("soundcloud", ignoreCase = true) -> MusicService.Soundcloud
+            label.contains("yandex", ignoreCase = true) -> MusicService.YandexMusic
+            label.contains("napster", ignoreCase = true) -> MusicService.Napster
+            label.contains("tidal", ignoreCase = true) -> MusicService.Tidal
+            label.contains("pandora", ignoreCase = true) -> MusicService.Pandora
+            label.contains("audiomack", ignoreCase = true) -> MusicService.Audiomack
+            label.contains("audius", ignoreCase = true) -> MusicService.Audius
+            label.contains("boomplay", ignoreCase = true) -> MusicService.Boomplay
+            label.contains("anghami", ignoreCase = true) -> MusicService.Anghami
+            else -> null
+        }
+    }
+
+    private fun Document.toArtworkLink(): String? {
+        return selectFirst("meta[property=og:image]")
+            ?.attr("content")
+            ?.trim()
+            ?.takeIf { it.isNotBlank() }
     }
 
     private fun getPriorityLinkForQuery(links: Map<MusicService, String>): String? {
@@ -108,5 +291,14 @@ class OdesliTrackLinksFetcher @Inject constructor(
             ?: links[MusicService.Audius]
             ?: links[MusicService.Boomplay]
             ?: links[MusicService.Anghami]
+    }
+
+    companion object {
+        private const val API_KEY = ""
+
+        private const val USER_AGENT_WEB = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:140.0) Gecko/20100101 Firefox/140.0"
+        private const val ACCEPT_HTML = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"
+        private const val ACCEPT_LANGUAGE = "en-US,en;q=0.5"
+        private const val REFERER_GOOGLE = "https://www.google.com/"
     }
 }

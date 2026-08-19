@@ -19,6 +19,7 @@ dependencies {
 
     implementation(libs.kotlinx.serializationJson)
     implementation(libs.stringSimilarity)
+    implementation(libs.jsoup)
 
     testImplementation(libs.junit4)
     testImplementation(libs.kotest)
