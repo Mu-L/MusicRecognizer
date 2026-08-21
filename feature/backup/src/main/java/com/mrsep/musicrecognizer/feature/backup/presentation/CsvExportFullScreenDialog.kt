@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
@@ -29,6 +30,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,6 +42,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import com.mrsep.musicrecognizer.core.ui.components.DialogSwitch
@@ -279,14 +282,21 @@ private fun CsvExportReadyContent(
                     Surface(
                         color = MaterialTheme.colorScheme.surfaceContainerLow,
                         shadowElevation = elevation,
-                        modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
-                        onClick = ::onItemSelect
+                        onClick = ::onItemSelect,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .toggleable(
+                                value = selectable.selected,
+                                onValueChange = { onItemSelect() },
+                                role = Role.Checkbox
+                            ),
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Checkbox(
                                 checked = selectable.selected,
-                                onCheckedChange = { onItemSelect() }
+                                onCheckedChange = null,
+                                modifier = Modifier.minimumInteractiveComponentSize(),
                             )
                             if (selectable.field is TrackLinkField || selectable.field == TrackField.LINK_ARTWORK) {
                                 Icon(
@@ -312,7 +322,7 @@ private fun CsvExportReadyContent(
                             ) {
                                 Icon(
                                     painter = painterResource(UiR.drawable.outline_drag_handle_24),
-                                    contentDescription = "Reorder"
+                                    contentDescription = stringResource(StringsR.string.reorder)
                                 )
                             }
                         }

@@ -16,7 +16,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -29,7 +28,6 @@ import com.mrsep.musicrecognizer.core.domain.track.model.TrackDataField
 import com.mrsep.musicrecognizer.core.ui.util.forwardingPainter
 import com.mrsep.musicrecognizer.feature.library.presentation.model.TrackUi
 import kotlinx.collections.immutable.ImmutableSet
-import com.mrsep.musicrecognizer.core.strings.R as StringsR
 import com.mrsep.musicrecognizer.core.ui.R as UiR
 
 @Composable
@@ -59,7 +57,7 @@ internal fun TrackSearchItem(
             model = track.artworkThumbUrl,
             fallback = placeholder,
             error = placeholder,
-            contentDescription = stringResource(StringsR.string.artwork),
+            contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
                 .shadow(

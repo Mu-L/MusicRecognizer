@@ -6,7 +6,6 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.FlowRow
@@ -35,6 +34,7 @@ import com.mrsep.musicrecognizer.core.ui.resources.titleId
 import com.mrsep.musicrecognizer.core.ui.util.copyTextToClipboard
 import com.mrsep.musicrecognizer.core.ui.util.openUrlImplicitly
 import kotlinx.collections.immutable.ImmutableList
+import com.mrsep.musicrecognizer.core.strings.R as StringsR
 
 @Composable
 internal fun MusicServiceChipsFlowRow(
@@ -98,10 +98,10 @@ internal fun MusicServiceChip(
             modifier = Modifier
                 .sizeIn(minHeight = 32.dp)
                 .combinedClickable(
-                    interactionSource = null,
-                    indication = LocalIndication.current,
                     onClick = { context.openUrlImplicitly(link) },
+                    onClickLabel = stringResource(StringsR.string.format_open_website_or_app, stringResource(titleRes)),
                     onLongClick = { context.copyTextToClipboard(link) },
+                    onLongClickLabel = stringResource(StringsR.string.copy),
                     role = Role.Button
                 )
                 .padding(horizontal = 8.dp)

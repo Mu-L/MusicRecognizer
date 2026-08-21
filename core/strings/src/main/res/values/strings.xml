@@ -55,6 +55,7 @@
     <string name="help">Help</string>
     <string name="show_more">Show more</string>
     <string name="show_less">Show less</string>
+    <string name="reorder">Reorder</string>
     <!-- Permissions -->
     <string name="permissions">Permissions</string>
     <string name="request_permission">Request permission</string>
@@ -134,6 +135,10 @@
     <string name="select_all">Select all</string>
     <string name="deselect_all">Deselect all</string>
     <string name="disable_multi_selection_mode">Disable multi-selection mode</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d selected</item>
+        <item quantity="other">%d selected</item>
+    </plurals>
     <string name="cancel_selected">Cancel selected</string>
     <string name="delete_selected">Delete selected</string>
     <string name="recording_start_player">Play</string>

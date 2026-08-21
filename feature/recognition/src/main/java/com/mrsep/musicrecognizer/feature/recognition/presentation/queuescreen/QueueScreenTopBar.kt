@@ -16,7 +16,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.toUpperCase
@@ -56,6 +65,7 @@ internal fun QueueScreenTopBar(
                 targetState = (selectedCount != 0),
                 label = "Title"
             ) { selectionTitle ->
+                val selectedDesc = pluralStringResource(StringsR.plurals.items_selected, count = selectedCount, selectedCount)
                 Text(
                     text = if (selectionTitle) {
                         if (selectedCount == 0) "" else "$selectedCount / $totalCount"
@@ -63,7 +73,15 @@ internal fun QueueScreenTopBar(
                         stringResource(StringsR.string.queue).toUpperCase(Locale.current)
                     },
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = if (selectedCount == 0) {
+                        Modifier
+                    } else {
+                        Modifier.clearAndSetSemantics {
+                            contentDescription = selectedDesc
+                            liveRegion = LiveRegionMode.Assertive
+                        }
+                    }
                 )
             }
         },
@@ -161,7 +179,11 @@ private fun QueueDropdownMenu(
                             alpha = if (useGridLayout) 1f else 0f
                         }
                     )
-                }
+                },
+                modifier = Modifier.semantics {
+                    role = Role.Checkbox
+                    selected = useGridLayout
+                },
             )
             DropdownMenuItem(
                 text = { Text(text = stringResource(StringsR.string.pref_title_show_creation_date)) },
@@ -174,7 +196,11 @@ private fun QueueDropdownMenu(
                             alpha = if (showCreationDate) 1f else 0f
                         }
                     )
-                }
+                },
+                modifier = Modifier.semantics {
+                    role = Role.Checkbox
+                    selected = showCreationDate
+                },
             )
         }
     }

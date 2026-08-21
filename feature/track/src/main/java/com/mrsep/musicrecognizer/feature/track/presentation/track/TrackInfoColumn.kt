@@ -12,10 +12,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mrsep.musicrecognizer.core.ui.util.copyTextToClipboard
+import com.mrsep.musicrecognizer.core.strings.R as StringsR
 
 @Composable
 internal fun TrackInfoColumn(
@@ -34,7 +36,13 @@ internal fun TrackInfoColumn(
                 interactionSource = null,
                 indication = null,
                 onClick = { expandedInfo = !expandedInfo },
-                onLongClick = { context.copyTextToClipboard("$title - $artist") }
+                onClickLabel = if (expandedInfo) {
+                    stringResource(StringsR.string.show_less)
+                } else {
+                    stringResource(StringsR.string.show_more)
+                },
+                onLongClick = { context.copyTextToClipboard("$title - $artist") },
+                onLongClickLabel = stringResource(StringsR.string.copy),
             )
     ) {
         Text(

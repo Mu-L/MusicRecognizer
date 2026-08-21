@@ -20,6 +20,10 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import com.mrsep.musicrecognizer.core.domain.track.model.TrackDataField
 import kotlinx.collections.immutable.ImmutableSet
 import com.mrsep.musicrecognizer.core.strings.R as StringsR
@@ -72,7 +76,11 @@ internal fun SearchScopeDropdownMenu(
                                 alpha = if (selected) 1f else 0f
                             }
                         )
-                    }
+                    },
+                    modifier = Modifier.semantics {
+                        role = Role.Checkbox
+                        this.selected = selected
+                    },
                 )
             }
         }

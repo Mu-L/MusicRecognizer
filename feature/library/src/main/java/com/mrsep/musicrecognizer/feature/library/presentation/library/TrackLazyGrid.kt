@@ -1,7 +1,6 @@
 package com.mrsep.musicrecognizer.feature.library.presentation.library
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
@@ -17,7 +16,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -26,7 +24,6 @@ import com.mrsep.musicrecognizer.core.ui.components.MultiSelectionState
 import com.mrsep.musicrecognizer.core.ui.util.forwardingPainter
 import com.mrsep.musicrecognizer.feature.library.presentation.model.TrackUi
 import kotlinx.collections.immutable.ImmutableList
-import com.mrsep.musicrecognizer.core.strings.R as StringsR
 import com.mrsep.musicrecognizer.core.ui.R as UiR
 
 @Composable
@@ -89,8 +86,6 @@ private fun TrackLazyGridItem(
             .clip(shape)
             .drawBehind { drawRect(color = containerColor) }
             .combinedClickable(
-                interactionSource = null,
-                indication = LocalIndication.current,
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
@@ -119,7 +114,7 @@ private fun TrackLazyGridItem(
                 model = track.artworkThumbUrl,
                 fallback = placeholder,
                 error = placeholder,
-                contentDescription = stringResource(StringsR.string.artwork),
+                contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier.fillMaxSize()
             )

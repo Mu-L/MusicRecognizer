@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.animation.togetherWith
-import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -74,8 +73,6 @@ internal fun RecognitionLazyColumnItem(
             .fillMaxWidth()
             .drawBehind { drawRect(color = containerColor) }
             .combinedClickable(
-                interactionSource = null,
-                indication = LocalIndication.current,
                 onClick = onClick,
                 onLongClick = onLongClick,
             )
