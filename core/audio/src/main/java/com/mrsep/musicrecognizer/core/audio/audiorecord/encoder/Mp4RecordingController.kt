@@ -74,7 +74,7 @@ internal class Mp4RecordingController(
         channel: SendChannel<AudioRecording>,
     ): Job = launch(AudioEncoderDispatcher) {
         var codecRef: MediaCodec? = null
-        val muxers: MutableMap<ScheduledRecording, MuxerWrapper> = mutableMapOf()
+        val muxers: MutableMap<ScheduledRecording, Mp4MuxerWrapper> = mutableMapOf()
         try {
             val soundSourceParams = checkNotNull(soundSource.params)
             val codec = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_AUDIO_AAC)
@@ -176,7 +176,7 @@ internal class Mp4RecordingController(
                                 this@launch.cancel()
                                 return
                             }
-                            MuxerWrapper(
+                            Mp4MuxerWrapper(
                                 outputFile = outputFile,
                                 mediaFormat = mediaFormat,
                                 startTimestamp = startTimestamp,
@@ -270,7 +270,7 @@ internal class Mp4RecordingController(
 
 
 @OptIn(UnstableApi::class)
-private class MuxerWrapper(
+private class Mp4MuxerWrapper(
     private val outputFile: File,
     private val mediaFormat: MediaFormat,
     private val startPresentationTimestamp: Duration,

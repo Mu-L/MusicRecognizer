@@ -1,7 +1,14 @@
 package com.mrsep.musicrecognizer.core.audio.audiorecord.encoder
 
+import android.annotation.SuppressLint
 import androidx.annotation.OptIn
+import androidx.media3.common.Format
+import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.muxer.BufferInfo
+import androidx.media3.muxer.MuxerException
+import androidx.media3.muxer.SeekableMuxerOutput
+import androidx.media3.muxer.WavMuxer
 import com.mrsep.musicrecognizer.core.audio.audiorecord.AudioEncoderDispatcher
 import com.mrsep.musicrecognizer.core.audio.audiorecord.AudioRecordingSessionFactory
 import com.mrsep.musicrecognizer.core.audio.audiorecord.prerecording.PrerecordingSoundSource
@@ -24,13 +31,13 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.io.File
-import java.io.IOException
+import java.nio.ByteBuffer
 import java.util.UUID
-import kotlin.getOrElse
 import kotlin.time.Duration
 import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
+@OptIn(UnstableApi::class)
 internal class WavRecordingController(
     private val soundSource: PrerecordingSoundSource,
     private val audioRecordingDataSource: AudioRecordingDataSource,
@@ -54,7 +61,7 @@ internal class WavRecordingController(
         includeBuffered: Boolean,
         channel: SendChannel<AudioRecording>,
     ): Job = launch(AudioEncoderDispatcher) {
-        val fileWrappers: MutableMap<ScheduledRecording, WavWriterWrapper> = mutableMapOf()
+        val muxers: MutableMap<ScheduledRecording, WavMuxerWrapper> = mutableMapOf()
         try {
             val soundSourceParams = checkNotNull(soundSource.params)
 
@@ -86,7 +93,7 @@ internal class WavRecordingController(
                     for (scheduledRecording in scheduledRecordings) {
                         if (chunkOffset < scheduledRecording.presentationOffset) continue
 
-                        val fileWrapper = fileWrappers.getOrPut(scheduledRecording) {
+                        val muxer = muxers.getOrPut(scheduledRecording) {
                             val startTimestamp = streamStartTimestamp + chunkOffset
                             val outputFile = runBlocking {
                                 audioRecordingDataSource.createNewFile(sessionId, RECORDING_FILE_EXT)
@@ -95,32 +102,32 @@ internal class WavRecordingController(
                                 this@launch.cancel()
                                 return@collect
                             }
-                            WavWriterWrapper(
+                            WavMuxerWrapper(
                                 outputFile = outputFile,
                                 startTimestamp = startTimestamp,
                                 soundSourceConfig = soundSourceParams
                             )
                         }
-                        if (fileWrapper.isReleased) continue
+                        if (muxer.isReleased) continue
 
-                        val currentFileDuration = fileWrapper.currentDuration
+                        val currentFileDuration = muxer.currentDuration
                         if (currentFileDuration < scheduledRecording.minDuration) {
                             try {
-                                fileWrapper.writeChunk(pcmChunk.data, pcmChunk.duration)
-                            } catch (e: IOException) {
+                                muxer.writeChunk(pcmChunk.data, pcmChunk.duration)
+                            } catch (e: MuxerException) {
                                 channel.close(e)
                                 this@launch.cancel()
                                 return@collect
                             }
                         } else {
-                            val file = fileWrapper.release()
+                            val file = muxer.release()
                             val silenceDuration = silenceTracker.querySilenceDuration(
-                                startTime = fileWrapper.startTimestamp,
-                                endTime = fileWrapper.startTimestamp + currentFileDuration,
+                                startTime = muxer.startTimestamp,
+                                endTime = muxer.startTimestamp + currentFileDuration,
                             )
                             val recording = AudioRecording(
                                 file = file,
-                                timestamp = fileWrapper.startTimestamp.toJavaInstant(),
+                                timestamp = muxer.startTimestamp.toJavaInstant(),
                                 source = soundSource.audioSource,
                                 duration = currentFileDuration,
                                 nonSilenceDuration = currentFileDuration - silenceDuration,
@@ -141,7 +148,7 @@ internal class WavRecordingController(
             channel.close(e)
         } finally {
             coroutineContext.cancelChildren()
-            fileWrappers.forEach { (_, fileWrapper) -> fileWrapper.release() }
+            muxers.forEach { (_, muxer) -> muxer.release() }
             channel.close()
         }
     }
@@ -153,7 +160,7 @@ internal class WavRecordingController(
 }
 
 @OptIn(UnstableApi::class)
-private class WavWriterWrapper(
+private class WavMuxerWrapper(
     private val outputFile: File,
     val startTimestamp: Instant,
     val soundSourceConfig: SoundSourceConfig,
@@ -164,27 +171,38 @@ private class WavWriterWrapper(
     var currentDuration: Duration = Duration.ZERO
         private set
 
-    private var wavWriter: WavWriter? = null
+    private var muxer: WavMuxer? = null
 
-    @Throws(IOException::class)
+    @Throws(MuxerException::class)
     fun writeChunk(chunk: ByteArray, chunkDuration: Duration) {
         check(!isReleased)
-        val wavWriter = wavWriter ?: WavWriter(
-            outputFile = outputFile,
-            sampleRate = soundSourceConfig.audioFormat.sampleRate,
-            channelCount = soundSourceConfig.audioFormat.channelCount,
-            pcmEncoding = soundSourceConfig.audioFormat.encoding
-        ).apply {
-            wavWriter = this
+        val muxer = muxer ?: WavMuxer(SeekableMuxerOutput.of(outputFile.absolutePath)).apply {
+            addTrack(
+                @SuppressLint("WrongConstant")
+                Format.Builder()
+                    .setSampleMimeType(MimeTypes.AUDIO_RAW)
+                    .setPcmEncoding(soundSourceConfig.audioFormat.encoding)
+                    .setChannelCount(soundSourceConfig.audioFormat.channelCount)
+                    .setSampleRate(soundSourceConfig.audioFormat.sampleRate)
+                    .build()
+            )
+            muxer = this
         }
-        wavWriter.write(chunk)
+        muxer.writeSampleData(
+            0,
+            ByteBuffer.wrap(chunk),
+            BufferInfo(currentDuration.inWholeMicroseconds, chunk.size, 0)
+        )
         currentDuration += chunkDuration
     }
 
     fun release(): File {
-        wavWriter?.release()
-        wavWriter = null
-        isReleased = true
+        try {
+            muxer?.close()
+        } finally {
+            muxer = null
+            isReleased = true
+        }
         return outputFile
     }
 }
