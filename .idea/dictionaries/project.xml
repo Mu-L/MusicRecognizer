@@ -1,18 +1,22 @@
 <component name="ProjectDictionaryState">
   <dictionary name="project">
     <words>
+      <w>MusicBrainz</w>
       <w>acrcloud</w>
       <w>amazon</w>
       <w>amazonmusic</w>
       <w>anghami</w>
       <w>applemusic</w>
       <w>audd</w>
+      <w>audile</w>
       <w>audiomack</w>
       <w>audius</w>
       <w>boomplay</w>
       <w>deezer</w>
       <w>isrc</w>
+      <w>itunes</w>
       <w>musicbrainz</w>
+      <w>musicrecognizer</w>
       <w>musixmatch</w>
       <w>napster</w>
       <w>odesli</w>
@@ -21,6 +25,7 @@
       <w>shazam</w>
       <w>songlink</w>
       <w>soundcloud</w>
+      <w>spinrilla</w>
       <w>spotify</w>
       <w>tidal</w>
       <w>yandex</w>
