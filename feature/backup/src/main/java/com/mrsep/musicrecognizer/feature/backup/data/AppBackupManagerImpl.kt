@@ -13,6 +13,7 @@ import com.mrsep.musicrecognizer.core.common.di.IoDispatcher
 import com.mrsep.musicrecognizer.core.common.util.getAppVersionCode
 import com.mrsep.musicrecognizer.core.data.enqueued.AudioSampleDataSource
 import com.mrsep.musicrecognizer.core.database.ApplicationDatabase
+import com.mrsep.musicrecognizer.core.database.di.APP_DATABASE_NAME
 import com.mrsep.musicrecognizer.core.datastore.USER_PREFERENCES_STORE
 import com.mrsep.musicrecognizer.feature.backup.AppBackupManager
 import com.mrsep.musicrecognizer.feature.backup.BackupEntry
@@ -105,7 +106,7 @@ internal class AppBackupManagerImpl @Inject constructor(
 
     private suspend fun exportDatabase(zipOutputStream: ZipOutputStream) {
         currentCoroutineContext().ensureActive()
-        val appDatabasePath = appContext.getDatabasePath(database.openHelper.databaseName).toPath()
+        val appDatabasePath = appContext.getDatabasePath(APP_DATABASE_NAME).toPath()
         check(appDatabasePath.exists()) { "App database file is not found" }
         check(database.checkoutWithRetry()) { "DB checkpoint was not performed, database is busy" }
         with(zipOutputStream) {
@@ -267,9 +268,9 @@ internal class AppBackupManagerImpl @Inject constructor(
     }
 
     private fun importDatabase(zipInputStream: ZipInputStream) {
-        val databasePath = appContext.getDatabasePath(database.openHelper.databaseName).toPath()
+        val databasePath = appContext.getDatabasePath(APP_DATABASE_NAME).toPath()
         database.close()
-        appContext.deleteDatabase(database.openHelper.databaseName)
+        appContext.deleteDatabase(APP_DATABASE_NAME)
         Files.createDirectories(databasePath.parent)
         Files.copy(zipInputStream, databasePath, StandardCopyOption.REPLACE_EXISTING)
     }

@@ -1,17 +1,21 @@
 package com.mrsep.musicrecognizer.core.database
 
 import android.util.Log
-import androidx.room.AutoMigration
-import androidx.room.Database
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.AutoMigration
+import androidx.room3.ColumnTypeConverters
+import androidx.room3.Database
+import androidx.room3.RoomDatabase
+import androidx.room3.useReaderConnection
+import androidx.room3.useWriterConnection
 import com.mrsep.musicrecognizer.core.database.enqueued.EnqueuedRecognitionDao
 import com.mrsep.musicrecognizer.core.database.enqueued.model.EnqueuedRecognitionEntity
 import com.mrsep.musicrecognizer.core.database.migration.AutoMigrationSpec3To4
 import com.mrsep.musicrecognizer.core.database.track.TrackDao
 import com.mrsep.musicrecognizer.core.database.track.TrackEntity
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
+
+private const val TAG = "ApplicationDatabase"
 
 @Database(
     entities = [
@@ -27,7 +31,7 @@ import kotlinx.coroutines.delay
         AutoMigration(from = 4, to = 5),
     ]
 )
-@TypeConverters(
+@ColumnTypeConverters(
     value = [
         FileRoomConverter::class,
         InstantRoomConverter::class,
@@ -41,11 +45,13 @@ abstract class ApplicationDatabase : RoomDatabase() {
 
     abstract fun enqueuedRecognitionDao(): EnqueuedRecognitionDao
 
-    fun getDataSize(): Long {
+    suspend fun getDataSize(): Long {
         val q = "SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size()"
-        return query(SimpleSQLiteQuery(q)).use { cursor ->
-            cursor.moveToFirst()
-            cursor.getLong(0)
+        return useReaderConnection { connection ->
+            connection.usePrepared(q) { statement ->
+                statement.step()
+                statement.getLong(0)
+            }
         }
     }
 
@@ -53,25 +59,26 @@ abstract class ApplicationDatabase : RoomDatabase() {
         var attemptCount = 1
         while (attemptCount <= 3) {
             if (checkout()) return true
-            Log.i(this::class.simpleName, "Database checkpoint was blocked, retry")
-            delay(500L * attemptCount)
+            Log.i(TAG, "Database checkpoint was blocked, retry")
+            delay(500.milliseconds * attemptCount)
             attemptCount++
         }
         return false
     }
 
     // https://www.sqlite.org/pragma.html#pragma_wal_checkpoint
-    // Fix SQLite cursor leaks
-    private fun checkout(): Boolean {
-        return query(SimpleSQLiteQuery("PRAGMA wal_checkpoint(FULL)")).use { cursor ->
-            cursor.moveToFirst()
-            if (cursor.getInt(0) == 0) {
-                if (cursor.getInt(1) == -1 && cursor.getInt(2) == -1) {
-                    Log.w(this::class.simpleName, "There is no write-ahead log for database")
+    private suspend fun checkout(): Boolean {
+        return useWriterConnection { connection ->
+            connection.usePrepared("PRAGMA wal_checkpoint(FULL)") { statement ->
+                statement.step()
+                if (statement.getLong(0) == 0L) {
+                    if (statement.getLong(1) == -1L && statement.getLong(2) == -1L) {
+                        Log.w(TAG, "There is no write-ahead log for database")
+                    }
+                    true
+                } else {
+                    false
                 }
-                true
-            } else {
-                false
             }
         }
     }

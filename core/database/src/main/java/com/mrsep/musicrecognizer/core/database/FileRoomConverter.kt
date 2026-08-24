@@ -1,16 +1,16 @@
 package com.mrsep.musicrecognizer.core.database
 
-import androidx.room.TypeConverter
+import androidx.room3.ColumnTypeConverter
 import java.io.File
 
 internal class FileRoomConverter {
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun stringToFile(filepath: String): File {
         return File(filepath)
     }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fileToString(file: File): String {
         return file.absolutePath
     }

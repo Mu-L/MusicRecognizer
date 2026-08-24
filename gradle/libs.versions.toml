@@ -46,7 +46,7 @@ palette = "1.0.0"
 protobuf = "4.35.1"
 protobufPlugin = "0.10.0"
 reorderable = "3.1.0"
-room = "2.8.4"
+room = "3.0.1"
 slf4j = "2.0.18"
 stringSimilarity = "2.0.0"
 turbine = "1.2.1"
@@ -93,6 +93,8 @@ androidx-media3-inspector = { module = "androidx.media3:media3-inspector", versi
 androidx-media3-muxer = { module = "androidx.media3:media3-muxer", version.ref = "media3" }
 androidx-media3-transformer = { module = "androidx.media3:media3-transformer", version.ref = "media3" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "androidxNavigation" }
+androidx-room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+androidx-room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 androidx-palette = { group = "androidx.palette", name = "palette-ktx", version.ref = "palette"  }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitExt" }
 androidx-test-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "androidxEspresso" }
@@ -130,9 +132,6 @@ materialKolor = { group = "com.materialkolor", name = "material-kolor", version.
 okhttp-mockWebServer = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttpMockWebServer" }
 protobuf-kotlin-lite = { group = "com.google.protobuf", name = "protobuf-kotlin-lite", version.ref = "protobuf" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 stringSimilarity = { module = "info.debatty:java-string-similarity", version.ref = "stringSimilarity" }
 turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine" }
@@ -152,13 +151,14 @@ aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "abo
 android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+detekt = { id = "dev.detekt", version.ref = "detektPlugin" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-parcelize = { id = "org.jetbrains.kotlin.plugin.parcelize", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobufPlugin" }
-detekt = { id = "dev.detekt", version.ref = "detektPlugin" }
+room = { id = "androidx.room3", version.ref = "room" }
 
 # Plugins defined by this project
 musicrecognizer-android-application = { id = "musicrecognizer.android.application", version = "unspecified" }

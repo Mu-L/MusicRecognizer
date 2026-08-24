@@ -1,10 +1,6 @@
 package com.mrsep.musicrecognizer.core.database.enqueued.model
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.ForeignKey
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.*
 import com.mrsep.musicrecognizer.core.database.track.TrackEntity
 import java.io.File
 import java.time.Instant
