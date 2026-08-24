@@ -186,7 +186,7 @@ internal class AuddRecognitionService @AssistedInject constructor(
             receiveSamplesWithTimeout.onJoin {
                 remoteResult.cancelAndJoin()
                 if (emptySamplesFlow) {
-                    lastResult = RemoteRecognitionResult.Error.BadRecording("Empty audio samples flow")
+                    lastResult = RemoteRecognitionResult.NoSoundDetected
                 }
             }
         }

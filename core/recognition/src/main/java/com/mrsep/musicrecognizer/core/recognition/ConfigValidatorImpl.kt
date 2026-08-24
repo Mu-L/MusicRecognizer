@@ -45,6 +45,7 @@ internal class ConfigValidatorImpl @Inject constructor(
             RemoteRecognitionResult.Error.AuthError -> ConfigValidationResult.Error.AuthError
             RemoteRecognitionResult.Error.ApiUsageLimited -> ConfigValidationResult.Error.ApiUsageLimited
             RemoteRecognitionResult.Error.BadConnection -> ConfigValidationResult.Error.BadConnection
+            RemoteRecognitionResult.NoSoundDetected,
             is RemoteRecognitionResult.Error.BadRecording,
             is RemoteRecognitionResult.Error.HttpError,
             is RemoteRecognitionResult.Error.UnhandledError -> ConfigValidationResult.Error.UnknownError

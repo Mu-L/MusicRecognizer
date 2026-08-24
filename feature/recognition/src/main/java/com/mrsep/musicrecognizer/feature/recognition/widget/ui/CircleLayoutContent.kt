@@ -68,24 +68,6 @@ internal fun CircleLayoutContent(
 
                 is RecognitionStatus.Done -> {
                     when (uiState.status.result) {
-                        is RecognitionResult.Error -> ResultIcon(
-                            iconResId = UiR.drawable.rounded_priority_high_48,
-                            contentDescriptionResId = StringsR.string.result_title_unknown_error,
-                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
-                        )
-
-                        is RecognitionResult.NoMatches -> ResultIcon(
-                            iconResId = UiR.drawable.rounded_question_mark_48,
-                            contentDescriptionResId = StringsR.string.result_title_no_matches,
-                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
-                        )
-
-                        is RecognitionResult.ScheduledOffline -> ResultIcon(
-                            iconResId = UiR.drawable.rounded_priority_high_48,
-                            contentDescriptionResId = StringsR.string.result_title_no_matches,
-                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
-                        )
-
                         is RecognitionResult.Success -> if (layout.showArtwork && uiState.artwork != null) {
                             // Wrapping the Image in a fixed-size Box prevents rendering glitches
                             Box(
@@ -106,6 +88,30 @@ internal fun CircleLayoutContent(
                                 size = layout.recognitionButtonMaxSize / buttonScaleFactor()
                             )
                         }
+
+                        is RecognitionResult.NoMatches -> ResultIcon(
+                            iconResId = UiR.drawable.rounded_question_mark_48,
+                            contentDescriptionResId = StringsR.string.result_title_no_matches,
+                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
+                        )
+
+                        RecognitionResult.NoSoundDetected -> ResultIcon(
+                            iconResId = UiR.drawable.rounded_priority_high_48,
+                            contentDescriptionResId = StringsR.string.result_title_no_sound_detected,
+                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
+                        )
+
+                        is RecognitionResult.ScheduledOffline -> ResultIcon(
+                            iconResId = UiR.drawable.rounded_priority_high_48,
+                            contentDescriptionResId = StringsR.string.result_title_no_matches,
+                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
+                        )
+
+                        is RecognitionResult.Error -> ResultIcon(
+                            iconResId = UiR.drawable.rounded_priority_high_48,
+                            contentDescriptionResId = StringsR.string.result_title_unknown_error,
+                            size = layout.recognitionButtonMaxSize / buttonScaleFactor()
+                        )
                     }
                 }
             }

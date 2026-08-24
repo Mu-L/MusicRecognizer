@@ -56,14 +56,14 @@ internal fun AnimatedVisibilityScope.FatalErrorShield(
     ) {
         Icon(
             painter = painterResource(UiR.drawable.outline_error_24),
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(72.dp),
             contentDescription = null
         )
         Text(
             text = title,
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 24.dp)
         )
         Text(
             text = message,

@@ -35,14 +35,14 @@ internal fun AnimatedVisibilityScope.ScheduledOfflineShield(
     ) {
         Icon(
             painter = painterResource(UiR.drawable.outline_schedule_send_24),
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(72.dp),
             contentDescription = null
         )
         Text(
             text = stringResource(StringsR.string.result_title_recognition_scheduled),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 24.dp)
         )
         OptionalRecognitionTaskMessage(
             recognitionTask = recognitionTask,

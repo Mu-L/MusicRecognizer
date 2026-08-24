@@ -136,11 +136,11 @@ class RecognitionWidget : GlanceAppWidget() {
                         intent = router.getDeepLinkIntentToTrack(result.track.id)
                     )
 
-                    is RecognitionResult.NoMatches -> onLaunchRecognition
+                    is RecognitionResult.NoMatches,
+                    RecognitionResult.NoSoundDetected -> onLaunchRecognition
 
                     is RecognitionResult.ScheduledOffline,
-                    is RecognitionResult.Error,
-                    -> actionRunCallback<ResetWidgetFinalState>()
+                    is RecognitionResult.Error -> actionRunCallback<ResetWidgetFinalState>()
                 }
             }
             GlanceTheme(

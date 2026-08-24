@@ -171,6 +171,7 @@ internal fun RecognitionActionsBottomSheet(
                             }
 
                             RemoteRecognitionResultUi.NoMatches,
+                            RemoteRecognitionResultUi.NoSoundDetected,
                             is RemoteRecognitionResultUi.Error,
                             null -> {
                                 Column {

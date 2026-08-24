@@ -81,6 +81,7 @@ internal fun Context.getWidgetTitleForStatus(status: RecognitionStatus) = when (
     is RecognitionStatus.Done -> when (val recognitionResult = status.result) {
         is RecognitionResult.Success -> recognitionResult.track.title
         is RecognitionResult.NoMatches -> getString(R.string.result_title_no_matches)
+        RecognitionResult.NoSoundDetected -> getString(R.string.result_title_no_sound_detected)
         is RecognitionResult.ScheduledOffline -> getString(R.string.result_title_recognition_scheduled)
         is RecognitionResult.Error -> {
             when (recognitionResult.remoteError) {
@@ -106,6 +107,7 @@ internal fun Context.getWidgetSubtitleForStatus(status: RecognitionStatus) = whe
     is RecognitionStatus.Done -> when (val recognitionResult = status.result) {
         is RecognitionResult.Success -> recognitionResult.track.artist
         is RecognitionResult.NoMatches -> getString(R.string.widget_tap_to_try_again)
+        RecognitionResult.NoSoundDetected -> getString(R.string.widget_tap_to_try_again)
         is RecognitionResult.ScheduledOffline -> getSubtitle(recognitionResult.recognitionTask)
         is RecognitionResult.Error -> {
             when (recognitionResult.remoteError) {

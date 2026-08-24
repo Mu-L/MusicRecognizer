@@ -189,6 +189,7 @@ internal fun EnqueuedRecognitionUi.getStatusMessage(concise: Boolean): String {
                 is RemoteRecognitionResultUi.Error.AuthError -> stringResource(StringsR.string.result_title_auth_error)
                 is RemoteRecognitionResultUi.Error.ApiUsageLimited -> stringResource(StringsR.string.result_title_service_usage_limited)
                 RemoteRecognitionResultUi.NoMatches -> stringResource(StringsR.string.result_title_no_matches)
+                RemoteRecognitionResultUi.NoSoundDetected -> stringResource(StringsR.string.result_title_no_sound_detected)
                 is RemoteRecognitionResultUi.Success -> stringResource(StringsR.string.recognition_status_track_found)
                 null -> stringResource(StringsR.string.recognition_status_idle)
             }

@@ -10,6 +10,8 @@ internal sealed class RemoteRecognitionResultUi {
 
     data object NoMatches : RemoteRecognitionResultUi()
 
+    data object NoSoundDetected : RemoteRecognitionResultUi()
+
     sealed class Error : RemoteRecognitionResultUi() {
 
         data object BadConnection : Error()
@@ -39,6 +41,8 @@ internal fun RemoteRecognitionResult.toUi() = when (this) {
     is RemoteRecognitionResult.Success -> RemoteRecognitionResultUi.Success(track.toUi())
 
     RemoteRecognitionResult.NoMatches -> RemoteRecognitionResultUi.NoMatches
+
+    RemoteRecognitionResult.NoSoundDetected -> RemoteRecognitionResultUi.NoSoundDetected
 
     RemoteRecognitionResult.Error.BadConnection -> RemoteRecognitionResultUi.Error.BadConnection
 

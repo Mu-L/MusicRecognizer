@@ -167,6 +167,7 @@ private fun BasicRecognitionButton(
                 ),
                 onLongClick = onLongClick.takeIf { !activated },
                 onLongClickLabel = stringResource(StringsR.string.action_recognize).takeIf { !activated },
+                hapticFeedbackEnabled = false,
                 role = Role.Button
             ),
         shape = CircleShape,

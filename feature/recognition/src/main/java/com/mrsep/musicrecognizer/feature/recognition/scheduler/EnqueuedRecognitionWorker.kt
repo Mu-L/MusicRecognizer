@@ -116,6 +116,7 @@ internal class EnqueuedRecognitionWorker @AssistedInject constructor(
                         Result.success()
                     }
 
+                    RemoteRecognitionResult.NoSoundDetected,
                     is RemoteRecognitionResult.NoMatches -> {
                         enqueuedRecognitionRepository.update(
                             enqueuedRecognition.copy(result = result, resultDate = Instant.now())

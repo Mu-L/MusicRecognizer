@@ -304,6 +304,7 @@ internal fun ExtraWindow(
                         }
 
                         is RecognitionResult.NoMatches,
+                        RecognitionResult.NoSoundDetected,
                         is RecognitionResult.ScheduledOffline,
                         is RecognitionResult.Error -> {
                             val title = context.getWidgetTitleForStatus(status)
@@ -316,7 +317,8 @@ internal fun ExtraWindow(
                                 onCloseClickLabel = stringResource(StringsR.string.close),
                                 onContentClick = {
                                     when (result) {
-                                        is RecognitionResult.NoMatches -> {
+                                        is RecognitionResult.NoMatches,
+                                        RecognitionResult.NoSoundDetected -> {
                                             sharedModel.startRecognition(StartRecognitionAction.Retry)
                                         }
                                         is RecognitionResult.ScheduledOffline -> {
@@ -329,7 +331,8 @@ internal fun ExtraWindow(
                                     }
                                 },
                                 onContentClickLabel = when (result) {
-                                    is RecognitionResult.NoMatches -> stringResource(StringsR.string.button_retry_recognition)
+                                    is RecognitionResult.NoMatches,
+                                    RecognitionResult.NoSoundDetected -> stringResource(StringsR.string.button_retry_recognition)
                                     is RecognitionResult.ScheduledOffline -> stringResource(StringsR.string.show)
                                     is RecognitionResult.Error -> stringResource(StringsR.string.reset)
                                 }

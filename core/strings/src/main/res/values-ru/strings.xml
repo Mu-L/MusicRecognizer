@@ -68,6 +68,9 @@
     <string name="button_retry_recognition_hint">Зажмите для повторного распознавания</string>
     <string name="result_title_no_matches">Совпадений не найдено</string>
     <string name="result_message_no_matches">Извините, приложение не смогло распознать эту песню</string>
+    <string name="result_title_no_sound_detected">Звук не обнаружен</string>
+    <string name="result_message_no_sound_detected_microphone">Убедитесь, что музыка играет достаточно громко рядом с вами, и попробуйте снова</string>
+    <string name="result_message_no_sound_detected_device">Убедитесь, что музыка играет на вашем устройстве, и попробуйте снова</string>
     <string name="result_title_bad_connection">Плохое интернет соединение</string>
     <string name="result_message_bad_connection">Пожалуйста, проверьте ваше подключение к интернету</string>
     <string name="result_title_recognition_saved">Распознавание сохранено</string>
@@ -85,6 +88,7 @@
     <string name="result_title_internal_error">Внутренняя ошибка</string>
     <string name="result_message_internal_error">Произошла внутренняя ошибка</string>
     <string name="result_title_unknown_error">Неизвестная ошибка</string>
+    <string name="internal_audio_capture_may_be_blocked">Некоторые приложения могут ограничивать доступ к их внутреннему аудио. Попробуйте играть музыку через динамик и использовать микрофон как источник звука.</string>
     <!-- Library screen -->
     <string name="library">Библиотека</string>
     <string name="empty_library_title">Нет распознанных треков</string>

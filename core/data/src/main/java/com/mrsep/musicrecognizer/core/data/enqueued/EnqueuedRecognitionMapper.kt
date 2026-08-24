@@ -44,6 +44,10 @@ internal fun EnqueuedRecognition.toEntity(): EnqueuedRecognitionEntity {
             resultType = RemoteRecognitionResultType.NoMatches
         }
 
+        RemoteRecognitionResult.NoSoundDetected -> {
+            resultType = RemoteRecognitionResultType.NoSoundDetected
+        }
+
         is RemoteRecognitionResult.Success -> {
             resultType = RemoteRecognitionResultType.Success
             trackId = result.track.id
@@ -70,6 +74,7 @@ internal fun EnqueuedRecognitionEntityWithTrack.toDomain(): EnqueuedRecognition 
             ?.run(RemoteRecognitionResult::Success)
 
         RemoteRecognitionResultType.NoMatches -> RemoteRecognitionResult.NoMatches
+        RemoteRecognitionResultType.NoSoundDetected -> RemoteRecognitionResult.NoSoundDetected
         RemoteRecognitionResultType.BadConnection -> RemoteRecognitionResult.Error.BadConnection
         RemoteRecognitionResultType.BadRecording -> RemoteRecognitionResult.Error.BadRecording(
             message = enqueued.resultMessage ?: ""

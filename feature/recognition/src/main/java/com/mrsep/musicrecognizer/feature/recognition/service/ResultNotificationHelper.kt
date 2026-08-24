@@ -163,6 +163,27 @@ class ResultNotificationHelper @Inject constructor(
                     )
             }
 
+            RecognitionResult.NoSoundDetected -> {
+                val title = appContext.getString(StringsR.string.result_title_no_sound_detected)
+                val message = appContext.getString(StringsR.string.widget_tap_to_try_again)
+                val bigText = when (usedAudioCaptureMode) {
+                    AudioCaptureMode.Microphone -> appContext.getString(StringsR.string.result_message_no_sound_detected_microphone)
+                    AudioCaptureMode.Device,
+                    AudioCaptureMode.Auto -> appContext.getString(StringsR.string.result_message_no_sound_detected_device)
+                }
+                resultNotificationBuilder(channelId)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setStyle(
+                        NotificationCompat.BigTextStyle()
+                            .setBigContentTitle(title)
+                            .bigText(bigText)
+                    )
+                    .setContentIntent(
+                        RecognitionControlActivity.startRecognitionWithPermissionRequestPendingIntent(appContext, usedAudioCaptureMode)
+                    )
+            }
+
             is RecognitionResult.Success -> {
                 notificationTag = result.track.id
                 val isLyricsFetcherRunning = trackMetadataFetchManager

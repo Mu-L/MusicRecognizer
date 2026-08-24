@@ -8,6 +8,8 @@ sealed class RecognitionResult {
 
     data class NoMatches(val recognitionTask: RecognitionTask) : RecognitionResult()
 
+    data object NoSoundDetected : RecognitionResult()
+
     data class ScheduledOffline(val recognitionTask: RecognitionTask) : RecognitionResult()
 
     data class Error(

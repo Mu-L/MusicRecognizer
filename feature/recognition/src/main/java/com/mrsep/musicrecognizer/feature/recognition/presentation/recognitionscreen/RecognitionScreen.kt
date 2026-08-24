@@ -41,6 +41,7 @@ import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscr
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.shields.BadConnectionShield
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.shields.FatalErrorShield
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.shields.NoMatchesShield
+import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.shields.NoSoundShield
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.shields.ScheduledOfflineShield
 import com.mrsep.musicrecognizer.feature.recognition.service.AudioCaptureServiceMode
 import com.mrsep.musicrecognizer.feature.recognition.service.createScreenCaptureIntentForDisplay
@@ -239,6 +240,42 @@ internal fun RecognitionScreen(
         ) { thisStatus ->
             when (thisStatus) {
                 is RecognitionStatus.Done -> when (val result = thisStatus.result) {
+                    is RecognitionResult.Success -> {
+                        LaunchedEffect(result) {
+                            delay(animationDurationButton.milliseconds)
+                            onNavigateToTrackScreen(result.track.id)
+                        }
+                        DisposableEffect(result) {
+                            onDispose(viewModel::resetRecognitionResult)
+                        }
+                    }
+
+                    is RecognitionResult.NoMatches -> NoMatchesShield(
+                        recognitionTask = result.recognitionTask,
+                        onDismissClick = viewModel::resetRecognitionResult,
+                        onRetryClick = { checkPermissionsAndLaunchRecognition(lastRequestedAudioCaptureMode.value) },
+                        onNavigateToQueue = { recognitionId ->
+                            viewModel.resetRecognitionResult()
+                            onNavigateToQueueScreen(recognitionId)
+                        }
+                    )
+
+                    RecognitionResult.NoSoundDetected -> NoSoundShield(
+                        usedCaptureMode = lastRequestedAudioCaptureMode.value,
+                        usedAltDeviceSoundSource = preferences?.useAltDeviceSoundSource ?: false,
+                        onDismissClick = viewModel::resetRecognitionResult,
+                        onRetryWithModeClick = ::checkPermissionsAndLaunchRecognition,
+                    )
+
+                    is RecognitionResult.ScheduledOffline -> ScheduledOfflineShield(
+                        recognitionTask = result.recognitionTask,
+                        onDismissClick = viewModel::resetRecognitionResult,
+                        onNavigateToQueue = { recognitionId ->
+                            viewModel.resetRecognitionResult()
+                            onNavigateToQueueScreen(recognitionId)
+                        }
+                    )
+
                     is RecognitionResult.Error -> when (val remoteError = result.remoteError) {
                         RemoteRecognitionResult.Error.BadConnection -> BadConnectionShield(
                             recognitionTask = result.recognitionTask,
@@ -315,39 +352,10 @@ internal fun RecognitionScreen(
                             }
                         )
                     }
-
-                    is RecognitionResult.ScheduledOffline -> ScheduledOfflineShield(
-                        recognitionTask = result.recognitionTask,
-                        onDismissClick = viewModel::resetRecognitionResult,
-                        onNavigateToQueue = { recognitionId ->
-                            viewModel.resetRecognitionResult()
-                            onNavigateToQueueScreen(recognitionId)
-                        }
-                    )
-
-                    is RecognitionResult.NoMatches -> NoMatchesShield(
-                        recognitionTask = result.recognitionTask,
-                        onDismissClick = viewModel::resetRecognitionResult,
-                        onRetryClick = { checkPermissionsAndLaunchRecognition(lastRequestedAudioCaptureMode.value) },
-                        onNavigateToQueue = { recognitionId ->
-                            viewModel.resetRecognitionResult()
-                            onNavigateToQueueScreen(recognitionId)
-                        }
-                    )
-
-                    is RecognitionResult.Success -> {
-                        LaunchedEffect(result) {
-                            delay(animationDurationButton.milliseconds)
-                            onNavigateToTrackScreen(result.track.id)
-                        }
-                        DisposableEffect(result) {
-                            onDispose(viewModel::resetRecognitionResult)
-                        }
-                    }
                 }
 
                 RecognitionStatus.Ready,
-                is RecognitionStatus.Recognizing -> { }
+                is RecognitionStatus.Recognizing -> {}
             }
         }
 
@@ -362,11 +370,12 @@ internal fun RecognitionScreen(
                 }
                 if (vibrated.value) return@LaunchedEffect
                 when (status.result) {
-                    is RecognitionResult.ScheduledOffline,
-                    is RecognitionResult.Success -> viewModel.vibrateSuccess()
+                    is RecognitionResult.Success,
+                    is RecognitionResult.ScheduledOffline -> viewModel.vibrateSuccess()
 
-                    is RecognitionResult.Error,
-                    is RecognitionResult.NoMatches -> viewModel.vibrateFailure()
+                    is RecognitionResult.NoMatches,
+                    is RecognitionResult.NoSoundDetected,
+                    is RecognitionResult.Error -> viewModel.vibrateFailure()
                 }
                 vibrated.value = true
             }

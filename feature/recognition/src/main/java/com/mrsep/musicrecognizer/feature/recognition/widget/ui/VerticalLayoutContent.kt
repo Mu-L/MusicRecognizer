@@ -49,9 +49,11 @@ internal fun VerticalLayoutContent(
                         artwork = uiState.artwork,
                         layout = layout
                     )
-                    is RecognitionResult.Error,
+
                     is RecognitionResult.NoMatches,
-                    is RecognitionResult.ScheduledOffline -> StatusInfo(
+                    RecognitionResult.NoSoundDetected,
+                    is RecognitionResult.ScheduledOffline,
+                    is RecognitionResult.Error -> StatusInfo(
                         title = context.getWidgetTitleForStatus(status),
                         subtitle = context.getWidgetSubtitleForStatus(status)
                     )

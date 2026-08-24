@@ -38,7 +38,7 @@ internal abstract class BaseRemoteRecognitionService(
 
         val remoteResultJob = samplesChannel.receiveAsFlow()
             .onEmpty {
-                lastResult = RemoteRecognitionResult.Error.BadRecording("Empty audio samples flow")
+                lastResult = RemoteRecognitionResult.NoSoundDetected
             }
             .transformWhile<AudioSample, Unit> { sample ->
                 lastResult = recognize(sample)

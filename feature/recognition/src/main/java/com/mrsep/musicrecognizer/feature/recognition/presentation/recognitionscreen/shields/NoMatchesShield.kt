@@ -36,14 +36,14 @@ internal fun AnimatedVisibilityScope.NoMatchesShield(
     ) {
         Icon(
             painter = painterResource(UiR.drawable.outline_search_24),
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(72.dp),
             contentDescription = null
         )
         Text(
             text = stringResource(StringsR.string.result_title_no_matches),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 24.dp)
         )
         Text(
             text = stringResource(StringsR.string.result_message_no_matches),

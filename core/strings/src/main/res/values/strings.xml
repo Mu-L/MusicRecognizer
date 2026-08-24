@@ -71,6 +71,9 @@
     <string name="button_retry_recognition_hint">Hold to retry recognition</string>
     <string name="result_title_no_matches">No matches found</string>
     <string name="result_message_no_matches">Sorry, the app couldn\'t recognize this song</string>
+    <string name="result_title_no_sound_detected">No sound detected</string>
+    <string name="result_message_no_sound_detected_microphone">Please make sure music is playing loudly enough nearby, then try again</string>
+    <string name="result_message_no_sound_detected_device">Please make sure music is playing on your device, then try again</string>
     <string name="result_title_bad_connection">Bad internet connection</string>
     <string name="result_message_bad_connection">Please check your network status</string>
     <string name="result_title_recognition_saved">Recognition saved</string>
@@ -88,6 +91,7 @@
     <string name="result_title_internal_error">Internal error</string>
     <string name="result_message_internal_error">An internal error occurred</string>
     <string name="result_title_unknown_error">Unknown error</string>
+    <string name="internal_audio_capture_may_be_blocked">Some apps may restrict capture of their internal audio. Try playing music out loud and switching the audio source to the microphone.</string>
     <!-- Library screen -->
     <string name="library">Library</string>
     <string name="empty_library_title">No recognized songs</string>

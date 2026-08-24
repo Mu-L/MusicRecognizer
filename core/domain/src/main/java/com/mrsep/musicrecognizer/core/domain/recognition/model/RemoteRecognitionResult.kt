@@ -8,6 +8,8 @@ sealed class RemoteRecognitionResult {
 
     data object NoMatches : RemoteRecognitionResult()
 
+    data object NoSoundDetected : RemoteRecognitionResult()
+
     sealed class Error : RemoteRecognitionResult() {
 
         data object BadConnection : Error()

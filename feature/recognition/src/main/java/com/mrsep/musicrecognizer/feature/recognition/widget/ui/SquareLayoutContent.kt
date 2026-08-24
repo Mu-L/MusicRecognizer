@@ -77,16 +77,6 @@ internal fun SquareLayoutContent(
 
                 is RecognitionStatus.Done -> {
                     when (val result = status.result) {
-                        is RecognitionResult.Error,
-                        is RecognitionResult.NoMatches,
-                        is RecognitionResult.ScheduledOffline,
-                        -> ButtonWithStatus(
-                            uiState = uiState,
-                            onLaunchRecognition = onLaunchRecognition,
-                            onCancelRecognition = onCancelRecognition,
-                            scaledButtonSize = layout.recognitionButtonMaxSize,
-                        )
-
                         is RecognitionResult.Success -> Box(
                             modifier = GlanceModifier.size(layout.artworkSize),
                             contentAlignment = Alignment.BottomStart
@@ -127,6 +117,16 @@ internal fun SquareLayoutContent(
                                 onLaunchRecognition = onLaunchRecognition,
                             )
                         }
+
+                        is RecognitionResult.NoMatches,
+                        RecognitionResult.NoSoundDetected,
+                        is RecognitionResult.ScheduledOffline,
+                        is RecognitionResult.Error -> ButtonWithStatus(
+                            uiState = uiState,
+                            onLaunchRecognition = onLaunchRecognition,
+                            onCancelRecognition = onCancelRecognition,
+                            scaledButtonSize = layout.recognitionButtonMaxSize,
+                        )
                     }
                 }
             }

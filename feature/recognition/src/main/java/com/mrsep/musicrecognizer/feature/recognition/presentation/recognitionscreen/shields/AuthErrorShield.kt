@@ -36,14 +36,14 @@ internal fun AnimatedVisibilityScope.AuthErrorShield(
     ) {
         Icon(
             painter = painterResource(UiR.drawable.outline_key_off_24),
-            modifier = Modifier.size(64.dp),
+            modifier = Modifier.size(72.dp),
             contentDescription = null
         )
         Text(
             text = stringResource(StringsR.string.result_title_auth_error),
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(top = 16.dp)
+            modifier = Modifier.padding(top = 24.dp)
         )
         Text(
             text = stringResource(StringsR.string.result_message_auth_error),

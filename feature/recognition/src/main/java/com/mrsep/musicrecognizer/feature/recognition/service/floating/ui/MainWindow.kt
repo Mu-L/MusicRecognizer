@@ -146,11 +146,12 @@ internal fun MainWindow(
             }
             if (vibrated.value) return@LaunchedEffect
             when (status.result) {
-                is RecognitionResult.ScheduledOffline,
-                is RecognitionResult.Success -> sharedModel.vibrateSuccess()
+                is RecognitionResult.Success,
+                is RecognitionResult.ScheduledOffline -> sharedModel.vibrateSuccess()
 
-                is RecognitionResult.Error,
-                is RecognitionResult.NoMatches -> sharedModel.vibrateFailure()
+                is RecognitionResult.NoMatches,
+                RecognitionResult.NoSoundDetected,
+                is RecognitionResult.Error -> sharedModel.vibrateFailure()
             }
             vibrated.value = true
         }
@@ -210,7 +211,6 @@ internal fun MainWindow(
                         scaleY = buttonScale.value
                     },
                     onClick = {
-                        if (vibrateOnTap) sharedModel.vibrateOnTap()
                         when (status) {
                             RecognitionStatus.Ready -> {
                                 if (vibrateOnTap) sharedModel.vibrateOnTap()
@@ -225,7 +225,8 @@ internal fun MainWindow(
                                     context.startActivity(deeplinkRouter.getDeepLinkIntentToTrack(result.track.id))
                                     sharedModel.dismissRecognitionResult()
                                 }
-                                is RecognitionResult.NoMatches -> {
+                                is RecognitionResult.NoMatches,
+                                RecognitionResult.NoSoundDetected -> {
                                     if (vibrateOnTap) sharedModel.vibrateOnTap()
                                     sharedModel.startRecognition(StartRecognitionAction.Retry)
                                 }
@@ -243,7 +244,8 @@ internal fun MainWindow(
                             is RecognitionStatus.Recognizing -> StringsR.string.action_cancel_recognition
                             is RecognitionStatus.Done -> when (status.result) {
                                 is RecognitionResult.Success -> StringsR.string.show_track
-                                is RecognitionResult.NoMatches -> StringsR.string.button_retry_recognition
+                                is RecognitionResult.NoMatches,
+                                RecognitionResult.NoSoundDetected -> StringsR.string.button_retry_recognition
                                 is RecognitionResult.ScheduledOffline -> StringsR.string.show
                                 is RecognitionResult.Error -> StringsR.string.reset
                             }
@@ -329,6 +331,7 @@ internal fun MainWindow(
                                         modifier = Modifier.size(36.dp)
                                     )
 
+                                    RecognitionResult.NoSoundDetected,
                                     is RecognitionResult.Error -> Icon(
                                         painter = painterResource(UiR.drawable.rounded_priority_high_48),
                                         contentDescription = null,
@@ -447,6 +450,7 @@ private val FloatingWindowUiState.transitionKey get() = when (recognitionStatus)
     is RecognitionStatus.Done -> when (recognitionStatus.result) {
         is RecognitionResult.Success -> "success"
         is RecognitionResult.NoMatches -> "no_matches"
+        RecognitionResult.NoSoundDetected -> "no_sound_detected"
         is RecognitionResult.ScheduledOffline -> "scheduled_offline"
         is RecognitionResult.Error -> "error"
     }
