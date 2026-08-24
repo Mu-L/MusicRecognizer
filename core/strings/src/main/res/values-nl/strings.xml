@@ -222,7 +222,7 @@
     <string name="music_services_links_dialog">Selecteer de muziekdiensten waarvoor je webkoppelingen wilt zien (indien beschikbaar):</string>
     <string name="pref_group_misc">Overig</string>
     <string name="pref_title_vibration_feedback">Trillingen</string>
-    <string name="vibration_feedback_dialog_title">Trilling</string>
+    <string name="vibration_feedback_dialog_title">Trillen</string>
     <string name="vibration_feedback_dialog_message">Trillingsfeedback configureren voor bepaalde acties:</string>
     <string name="vibration_feedback_dialog_vibrate_on_tap">Trillen bij tikken</string>
     <string name="vibration_feedback_dialog_vibrate_on_result">Trillen bij resultaat</string>
@@ -333,4 +333,9 @@
     <string name="about_pref_subtitle_donation">Ondersteun het project</string>
     <string name="about_pref_donation_message">Deze app is volledig gratis. Geen advertenties of andere vormen van commerciële inkomsten. Om verdere ontwikkeling te steunen of gewoon om je dankbaarheid te tonen, kun je overwegen een donatie te doen. Bedankt voor je steun!</string>
     <string name="file_manager_not_found_toast">Kan geen bestandsbeheer vinden</string>
+    <plurals name="items_selected">
+        <item quantity="one">%d geselecteerd</item>
+        <item quantity="other">%d geselecteerd</item>
+    </plurals>
+    <string name="reorder">Hersorteren</string>
 </resources>
