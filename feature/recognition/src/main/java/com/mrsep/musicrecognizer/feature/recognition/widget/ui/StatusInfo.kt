@@ -16,6 +16,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import com.mrsep.musicrecognizer.core.domain.recognition.model.RecognitionResult
 import com.mrsep.musicrecognizer.core.domain.recognition.model.RecognitionStatus
@@ -49,7 +50,8 @@ internal fun RowScope.StatusInfo(
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,
                 fontSize = titleTextSize,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Start,
             ),
             maxLines = 1,
             modifier = GlanceModifier.fillMaxWidth()
@@ -61,7 +63,8 @@ internal fun RowScope.StatusInfo(
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurfaceVariant,
                     fontSize = subtitleTextSize,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Start,
                 ),
                 maxLines = 2,
                 modifier = GlanceModifier.fillMaxWidth()

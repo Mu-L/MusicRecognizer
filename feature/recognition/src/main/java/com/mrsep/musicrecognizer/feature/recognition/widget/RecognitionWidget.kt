@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.os.Build
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.glance.GlanceId
 import androidx.glance.GlanceTheme
 import androidx.glance.action.ActionParameters
@@ -120,7 +121,9 @@ class RecognitionWidget : GlanceAppWidget() {
 
         provideContent {
             val widgetLayout = RecognitionWidgetLayout.fromLocalSize()
-            val widgetUiState by widgetUiFlow(widgetLayout).collectAsState(
+            val widgetUiState by remember(widgetLayout) {
+                widgetUiFlow(widgetLayout)
+            }.collectAsState(
                 initial = WidgetUiState(
                     status = RecognitionStatus.Ready,
                     artwork = null

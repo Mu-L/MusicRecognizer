@@ -69,7 +69,8 @@ internal fun RowScope.TrackInfoHorizontal(
                 style = TextStyle(
                     color = GlanceTheme.colors.onSurface,
                     fontSize = titleTextSize,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Start,
                 ),
                 maxLines = if (layout.isNarrow) 1 else 2,
                 modifier = GlanceModifier.fillMaxWidth()
@@ -81,7 +82,8 @@ internal fun RowScope.TrackInfoHorizontal(
                     style = TextStyle(
                         color = GlanceTheme.colors.onSurfaceVariant,
                         fontSize = subtitleTextSize,
-                        fontWeight = FontWeight.Normal
+                        fontWeight = FontWeight.Normal,
+                        textAlign = TextAlign.Start,
                     ),
                     maxLines = 1,
                     modifier = GlanceModifier.fillMaxWidth()
@@ -134,7 +136,7 @@ internal fun RowScope.TrackInfoVertical(
                     color = GlanceTheme.colors.onSurface,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 ),
                 maxLines = 2,
                 modifier = GlanceModifier.fillMaxWidth()
@@ -146,7 +148,7 @@ internal fun RowScope.TrackInfoVertical(
                     color = GlanceTheme.colors.onSurfaceVariant,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Normal,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 ),
                 maxLines = 1,
                 modifier = GlanceModifier.fillMaxWidth()

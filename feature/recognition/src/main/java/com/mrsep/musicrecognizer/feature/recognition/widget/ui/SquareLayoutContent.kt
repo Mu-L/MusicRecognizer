@@ -26,6 +26,7 @@ import androidx.glance.layout.size
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
+import androidx.glance.text.TextAlign
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
 import com.mrsep.musicrecognizer.core.domain.recognition.model.RecognitionResult
@@ -153,7 +154,8 @@ private fun TrackInfoWithButton(
                 style = TextStyle(
                     color = ColorProvider(Color.White),
                     fontSize = titleTextSize,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Start,
                 ),
                 maxLines = 1,
                 modifier = GlanceModifier.fillMaxWidth()
@@ -164,7 +166,8 @@ private fun TrackInfoWithButton(
                 style = TextStyle(
                     color = ColorProvider(Color(0.9f, 0.9f, 0.9f)),
                     fontSize = subtitleTextSize,
-                    fontWeight = FontWeight.Normal
+                    fontWeight = FontWeight.Normal,
+                    textAlign = TextAlign.Start,
                 ),
                 maxLines = 1,
                 modifier = GlanceModifier.fillMaxWidth()
@@ -221,7 +224,8 @@ private fun ButtonWithStatus(
             style = TextStyle(
                 color = GlanceTheme.colors.onSurface,
                 fontSize = titleTextSize,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
             ),
             maxLines = 2,
             modifier = GlanceModifier.padding(horizontal = 8.dp)
