@@ -1,0 +1,4 @@
+* Fix retry behavior to correctly reuse the previously used audio source
+* Show "No sound detected" instead of "Recording error" when the app captures complete silence, e.g. when a third-party app restricts internal audio capture
+* Improve accessibility
+* Update translations
