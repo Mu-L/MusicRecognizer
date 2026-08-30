@@ -133,6 +133,10 @@ internal fun AppNavigation(
         startDestination = BAR_HOST_ROUTE,
         enterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
         exitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        popExitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        predictivePopEnterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        predictivePopExitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
         modifier = Modifier.fillMaxSize(),
     ) {
         barNavHost(
@@ -245,6 +249,10 @@ private fun BarNavHost(
         modifier = modifier.fillMaxSize(),
         enterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
         exitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        popEnterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        popExitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        predictivePopEnterTransition = { fadeIn(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
+        predictivePopExitTransition = { fadeOut(animationSpec = tween(SCREEN_TRANSITION_DURATION)) },
     ) {
         navigation(
             startDestination = RecognitionScreen.ROUTE,
