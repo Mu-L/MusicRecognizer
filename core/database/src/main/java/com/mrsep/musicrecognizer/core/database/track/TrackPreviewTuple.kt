@@ -1,6 +1,6 @@
 package com.mrsep.musicrecognizer.core.database.track
 
-import androidx.room3.ColumnInfo
+import androidx.room.ColumnInfo
 import java.time.Instant
 
 data class TrackPreviewTuple(

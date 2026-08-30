@@ -1,6 +1,6 @@
 package com.mrsep.musicrecognizer.core.database.track
 
-import androidx.room3.*
+import androidx.room.*
 import com.mrsep.musicrecognizer.core.domain.recognition.model.RecognitionProvider
 import java.time.Instant
 import java.time.LocalDate

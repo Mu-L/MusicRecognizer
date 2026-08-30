@@ -1,17 +1,17 @@
 package com.mrsep.musicrecognizer.core.database
 
-import androidx.room3.ColumnTypeConverter
+import androidx.room.TypeConverter
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 
 internal class DurationRoomConverter {
 
-    @ColumnTypeConverter
+    @TypeConverter
     fun durationToTimestamp(duration: Duration): Long {
         return duration.inWholeMilliseconds
     }
 
-    @ColumnTypeConverter
+    @TypeConverter
     fun timestampToDuration(millis: Long): Duration {
         return millis.milliseconds
     }

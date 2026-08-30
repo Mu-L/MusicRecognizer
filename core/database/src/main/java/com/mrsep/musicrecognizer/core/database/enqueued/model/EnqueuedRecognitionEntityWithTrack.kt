@@ -1,14 +1,14 @@
 package com.mrsep.musicrecognizer.core.database.enqueued.model
 
-import androidx.room3.Embedded
-import androidx.room3.Relation
+import androidx.room.Embedded
+import androidx.room.Relation
 import com.mrsep.musicrecognizer.core.database.track.TrackEntity
 
 data class EnqueuedRecognitionEntityWithTrack(
     @Embedded val enqueued: EnqueuedRecognitionEntity,
     @Relation(
-        parentColumns = ["result_track_id"],
-        entityColumns = ["id"],
+        parentColumn = "result_track_id",
+        entityColumn = "id"
     )
     val track: TrackEntity?
 )

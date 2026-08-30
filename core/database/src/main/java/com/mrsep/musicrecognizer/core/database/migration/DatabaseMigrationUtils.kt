@@ -1,11 +1,12 @@
 package com.mrsep.musicrecognizer.core.database.migration
 
 import android.util.Log
-import androidx.sqlite.SQLiteConnection
+import androidx.core.database.getStringOrNull
+import androidx.sqlite.db.SupportSQLiteDatabase
 
 internal object DatabaseMigrationUtils {
 
-    internal fun SQLiteConnection.isSQLiteVersionAtLeast(version: String): Boolean? {
+    internal fun SupportSQLiteDatabase.isSQLiteVersionAtLeast(version: String): Boolean? {
         val thisVersion = querySQLiteVersion() ?: return null
         return try {
             compareSQLiteVersions(thisVersion, version) != -1
@@ -15,10 +16,10 @@ internal object DatabaseMigrationUtils {
         }
     }
 
-    private fun SQLiteConnection.querySQLiteVersion(): String? {
-        return prepare("SELECT sqlite_version()").use { statement ->
-            if (!statement.step()) return null
-            if (statement.isNull(0)) null else statement.getText(0)
+    private fun SupportSQLiteDatabase.querySQLiteVersion(): String? {
+        return query("SELECT sqlite_version()").use {
+            if (!it.moveToNext()) return null
+            it.getStringOrNull(0)
         }
     }
 

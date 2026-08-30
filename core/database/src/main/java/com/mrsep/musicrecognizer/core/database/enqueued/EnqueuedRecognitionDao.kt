@@ -1,6 +1,6 @@
 package com.mrsep.musicrecognizer.core.database.enqueued
 
-import androidx.room3.*
+import androidx.room.*
 import com.mrsep.musicrecognizer.core.database.DatabaseUtils.dbChunkedMap
 import com.mrsep.musicrecognizer.core.database.DatabaseUtils.eachDbChunk
 import com.mrsep.musicrecognizer.core.database.enqueued.model.EnqueuedRecognitionEntity

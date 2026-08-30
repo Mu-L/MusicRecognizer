@@ -1,16 +1,16 @@
 package com.mrsep.musicrecognizer.core.database
 
-import androidx.room3.ColumnTypeConverter
+import androidx.room.TypeConverter
 import java.time.LocalDate
 
 internal class LocalDateRoomConverter {
 
-    @ColumnTypeConverter
+    @TypeConverter
     fun timestampToLocalDate(epochDay: Long): LocalDate {
         return LocalDate.ofEpochDay(epochDay)
     }
 
-    @ColumnTypeConverter
+    @TypeConverter
     fun localDateToTimestamp(date: LocalDate): Long {
         return date.toEpochDay()
     }

@@ -1,16 +1,15 @@
 package com.mrsep.musicrecognizer.core.database.migration
 
 import android.content.Context
-import androidx.room3.migration.Migration
-import androidx.sqlite.SQLiteConnection
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import com.github.f4b6a3.uuid.UuidCreator
 import com.mrsep.musicrecognizer.core.audio.audiorecord.encoder.AdtsToMp4Migration
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
 import java.nio.file.AtomicMoveNotSupportedException
@@ -20,16 +19,16 @@ import java.time.Instant
 import kotlin.io.path.ExperimentalPathApi
 
 private data class RecognitionFile(
-    val recognitionId: Long,
+    val recognitionId: Int,
     val originalFile: File,
     val migrationFile: File,
 )
 
 // Migrate samples from ADTS to MP4 container, use UUIDs for new filenames
-internal class Migration9To10(private val appContext: Context) : Migration(9, 10) {
+internal class Migration9To10(private val appContext: Context): Migration(9, 10) {
 
     @OptIn(ExperimentalPathApi::class)
-    override suspend fun migrate(connection: SQLiteConnection) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         val oldSamplesDir = appContext.filesDir.resolve("enqueued_records")
         val newSamplesDir = appContext.filesDir.resolve("audio_samples")
         newSamplesDir.mkdirs()
@@ -38,10 +37,13 @@ internal class Migration9To10(private val appContext: Context) : Migration(9, 10
         val migrated = mutableListOf<RecognitionFile>()
         val corrupted = mutableListOf<RecognitionFile>()
 
-        connection.prepare("SELECT id, record_file FROM enqueued_recognition").use { statement ->
-            while (statement.step()) {
-                val id = statement.getLong(0)
-                val originalFile = File(statement.getText(1))
+        val cursor = db.query("SELECT id, record_file FROM enqueued_recognition")
+        cursor.use {
+            val idIndex = cursor.getColumnIndex("id")
+            val fileIndex = cursor.getColumnIndex("record_file")
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(idIndex)
+                val originalFile = cursor.getString(fileIndex).run(::File)
                 val uniqueId = UuidCreator.getNameBasedSha1(originalFile.name)
                 val migrationFile = newSamplesDir.resolve("$uniqueId.m4a")
                 when {
@@ -53,10 +55,9 @@ internal class Migration9To10(private val appContext: Context) : Migration(9, 10
         }
 
         val semaphore = Semaphore(Runtime.getRuntime().availableProcessors())
-        val mutex = Mutex()
         val adtsToMp4Migration = AdtsToMp4Migration(appContext)
-        coroutineScope {
-            needMigration.map { (id, adtsSampleFile, migrationFile) ->
+        runBlocking {
+            val conversions = needMigration.map { (id, adtsSampleFile, migrationFile) ->
                 launch(Dispatchers.IO) {
                     semaphore.withPermit {
                         val adtsFileName = adtsSampleFile.name
@@ -81,35 +82,20 @@ internal class Migration9To10(private val appContext: Context) : Migration(9, 10
                             migrationFile.delete()
                             check(newSampleTempFile.renameTo(migrationFile))
                         }
-                        mutex.withLock {
-                            migrated += RecognitionFile(id, adtsSampleFile, migrationFile)
-                        }
+                        migrated += RecognitionFile(id, adtsSampleFile, migrationFile)
                         adtsSampleFile.delete()
                     }
                 }
             }
+            conversions.joinAll()
         }
         oldSamplesDir.deleteRecursively()
 
-        if (migrated.isNotEmpty()) {
-            connection.prepare("UPDATE enqueued_recognition SET record_file = ? WHERE id = ?").use { statement ->
-                for ((id, _, migrationFile) in migrated) {
-                    statement.bindText(1, migrationFile.absolutePath)
-                    statement.bindLong(2, id)
-                    statement.step()
-                    statement.reset()
-                }
-            }
+        for ((id, _, migrationFile) in migrated) {
+            db.execSQL("UPDATE enqueued_recognition SET record_file = '${migrationFile.absolutePath}' WHERE id = $id")
         }
-
-        if (corrupted.isNotEmpty()) {
-            connection.prepare("DELETE FROM enqueued_recognition WHERE id = ?").use { statement ->
-                for ((id, _) in corrupted) {
-                    statement.bindLong(1, id)
-                    statement.step()
-                    statement.reset()
-                }
-            }
+        for ((id, _) in corrupted) {
+            db.execSQL("DELETE FROM enqueued_recognition WHERE id = $id")
         }
     }
 }

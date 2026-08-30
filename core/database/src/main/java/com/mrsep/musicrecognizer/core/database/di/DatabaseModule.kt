@@ -1,7 +1,7 @@
 package com.mrsep.musicrecognizer.core.database.di
 
 import android.content.Context
-import androidx.room3.Room
+import androidx.room.Room
 import com.mrsep.musicrecognizer.core.database.ApplicationDatabase
 import com.mrsep.musicrecognizer.core.database.migration.*
 import dagger.Module
@@ -11,7 +11,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-const val APP_DATABASE_NAME = "application_database"
+private const val DATABASE_NAME = "application_database"
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -23,7 +23,7 @@ internal class RoomModule {
         return Room.databaseBuilder(
             appContext,
             ApplicationDatabase::class.java,
-            APP_DATABASE_NAME
+            DATABASE_NAME
         )
             .addMigrations(
                 Migration5To6,
