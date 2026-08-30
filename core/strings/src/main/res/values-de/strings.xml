@@ -200,7 +200,7 @@
     <string name="notification_channel_name_scheduled_result">Song-Ergebnisse geplanter Erkennungen</string>
     <string name="notification_channel_desc_scheduled_result">Zeigt die Ergebnisse der Erkennung von Songs an, die offline oder in anderen Fällen geplant wurden</string>
     <string name="crash_dialog_title">Audile ist abgestürzt</string>
-    <string name="crash_dialog_message">Ein unerwarteter Fehler ist aufgetreten, welcher zum stoppen der App führte. Möchtest du eine Fehlermeldung per Email senden, um zu Helfen das Problem zu lösen?</string>
+    <string name="crash_dialog_message">Ein unerwarteter Fehler ist aufgetreten, welcher zum stoppen der App führte. Möchtest du eine Fehlermeldung per E-Mail senden, um zu Helfen das Problem zu lösen?</string>
     <string name="crash_dialog_button_cancel">Abbrechen</string>
     <string name="main_screen_tap_to_recognize">Zum Erkennen antippen</string>
     <string name="widget_tap_to_recognize">Zum Erkennen antippen</string>
@@ -338,4 +338,8 @@
         <item quantity="one">%d ausgewählt</item>
         <item quantity="other">%d ausgewählt</item>
     </plurals>
+    <string name="result_title_no_sound_detected">Es wurde kein Ton erkannt</string>
+    <string name="result_message_no_sound_detected_microphone">Bitte stelle sicher, dass in der Nähe Musik laut genug läuft, und versuche es erneut</string>
+    <string name="result_message_no_sound_detected_device">Bitte stelle sicher, dass Musik auf deinem Gerät läuft, und versuche es erneut</string>
+    <string name="internal_audio_capture_may_be_blocked">Einige Apps schränken das Aufnehmen ihres internen Audios ein. Versuche, die Musik laut abzuspielen und die Audioquelle auf das Mikrofon umzustellen.</string>
 </resources>
