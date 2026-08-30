@@ -1,5 +1,7 @@
 package com.mrsep.musicrecognizer.feature.recognition.widget.ui
 
+import android.annotation.SuppressLint
+import androidx.annotation.DrawableRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -48,6 +50,7 @@ internal fun SquareLayoutContent(
     uiState: WidgetUiState,
     onLaunchRecognition: Action,
     onCancelRecognition: Action,
+    onRetryRecognition: Action,
     onWidgetClick: Action,
 ) {
     // Clickable modifier affects the shape of widget during smooth transition,
@@ -68,8 +71,7 @@ internal fun SquareLayoutContent(
         ) {
             when (val status = uiState.status) {
                 RecognitionStatus.Ready,
-                is RecognitionStatus.Recognizing,
-                -> ButtonWithStatus(
+                is RecognitionStatus.Recognizing -> ButtonWithStatus(
                     uiState = uiState,
                     onLaunchRecognition = onLaunchRecognition,
                     onCancelRecognition = onCancelRecognition,
@@ -120,13 +122,18 @@ internal fun SquareLayoutContent(
                         }
 
                         is RecognitionResult.NoMatches,
-                        RecognitionResult.NoSoundDetected,
-                        is RecognitionResult.ScheduledOffline,
-                        is RecognitionResult.Error -> ButtonWithStatus(
+                        RecognitionResult.NoSoundDetected -> ButtonWithStatus(
                             uiState = uiState,
-                            onLaunchRecognition = onLaunchRecognition,
+                            onLaunchRecognition = onRetryRecognition,
                             onCancelRecognition = onCancelRecognition,
                             scaledButtonSize = layout.recognitionButtonMaxSize,
+                        )
+
+                        is RecognitionResult.ScheduledOffline,
+                        is RecognitionResult.Error -> IconWithStatus(
+                            uiState = uiState,
+                            iconResId = UiR.drawable.rounded_priority_high_48,
+                            iconSize = layout.recognitionButtonMaxSize,
                         )
                     }
                 }
@@ -135,6 +142,7 @@ internal fun SquareLayoutContent(
     }
 }
 
+@SuppressLint("RestrictedApi")
 @Composable
 private fun TrackInfoWithButton(
     title: String,
@@ -179,20 +187,13 @@ private fun TrackInfoWithButton(
             }
         }
         Spacer(GlanceModifier.width(12.dp))
-        Box(
-            modifier = GlanceModifier
-                .clickable(
-                    rippleOverride = -1,
-                    onClick = onLaunchRecognition
-                )
-        ) {
-            RecognitionButtonContent(
-                isRecognizing = false,
-                contentSize = 48.dp,
-                filledStyle = true,
-                contentDescription = context.getString(StringsR.string.action_recognize)
-            )
-        }
+        StaticRecognitionButton(
+            isRecognizing = false,
+            onClick = onLaunchRecognition,
+            onClickLabel = context.getString(StringsR.string.action_recognize),
+            filledStyle = true,
+            buttonSize = 48.dp,
+        )
     }
 }
 
@@ -211,14 +212,54 @@ private fun ButtonWithStatus(
             .fillMaxSize()
             .padding(8.dp)
     ) {
+        val isRecognizing = uiState.status is RecognitionStatus.Recognizing
         AnimatedRecognitionButton(
-            isRecognizing = uiState.status is RecognitionStatus.Recognizing,
-            onLaunchRecognition = onLaunchRecognition,
-            onCancelRecognition = onCancelRecognition,
+            isRecognizing = isRecognizing,
+            onClick = if (isRecognizing) onCancelRecognition else onLaunchRecognition,
+            onClickLabel = context.getString(
+                if (isRecognizing) StringsR.string.action_cancel_recognition
+                else StringsR.string.action_recognize
+            ),
             filledStyle = true,
             scaledButtonSize = scaledButtonSize
         )
         Spacer(GlanceModifier.height(scaledButtonSize / 3))
+        Text(
+            text = context.getWidgetTitleForStatus(uiState.status),
+            style = TextStyle(
+                color = GlanceTheme.colors.onSurface,
+                fontSize = titleTextSize,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+            ),
+            maxLines = 2,
+            modifier = GlanceModifier.padding(horizontal = 8.dp)
+        )
+    }
+}
+
+@Composable
+private fun IconWithStatus(
+    uiState: WidgetUiState,
+    @DrawableRes iconResId: Int,
+    iconSize: Dp,
+) {
+    val context = LocalContext.current
+    Column(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .padding(8.dp)
+    ) {
+        Image(
+            provider = ImageProvider(iconResId),
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            colorFilter = ColorFilter.tint(GlanceTheme.colors.onSurface),
+            modifier = GlanceModifier.size(iconSize).padding(4.dp)
+        )
+        Spacer(GlanceModifier.height(iconSize / 3))
         Text(
             text = context.getWidgetTitleForStatus(uiState.status),
             style = TextStyle(

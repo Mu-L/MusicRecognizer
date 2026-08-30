@@ -44,6 +44,7 @@ internal class FloatingWindowSharedModel(
             FloatingWindowUserPreferences(
                 defaultAudioCaptureMode = it.defaultAudioCaptureMode,
                 mainButtonLongPressAudioCaptureMode = it.mainButtonLongPressAudioCaptureMode,
+                lastUsedAudioCaptureMode = it.lastUsedAudioCaptureMode,
                 useAltDeviceSoundSource = it.useAltDeviceSoundSource,
                 hapticFeedback = it.hapticFeedback
             )
@@ -74,21 +75,18 @@ internal class FloatingWindowSharedModel(
         initialValue = FloatingWindowUiState(RecognitionStatus.Ready)
     )
 
-    private var lastRequestedAudioCaptureMode: AudioCaptureMode? = null
-
     fun startRecognition(action: StartRecognitionAction) {
         val preferences = preferences.value ?: return
         val audioCaptureMode = when (action) {
             StartRecognitionAction.Default -> preferences.defaultAudioCaptureMode
             StartRecognitionAction.Alternative -> preferences.mainButtonLongPressAudioCaptureMode
-            StartRecognitionAction.Retry -> lastRequestedAudioCaptureMode ?: preferences.defaultAudioCaptureMode
+            StartRecognitionAction.Retry -> preferences.lastUsedAudioCaptureMode
         }
         RecognitionControlService.startRecognitionWithPermissionFlow(
             context = context,
             audioCaptureMode = audioCaptureMode,
             useAltDeviceSoundSource = preferences.useAltDeviceSoundSource,
         )
-        lastRequestedAudioCaptureMode = audioCaptureMode
     }
 
     fun dismissRecognitionResult() {
@@ -128,6 +126,7 @@ internal enum class StartRecognitionAction { Default, Alternative, Retry }
 internal data class FloatingWindowUserPreferences(
     val defaultAudioCaptureMode: AudioCaptureMode,
     val mainButtonLongPressAudioCaptureMode: AudioCaptureMode,
+    val lastUsedAudioCaptureMode: AudioCaptureMode,
     val useAltDeviceSoundSource: Boolean,
     val hapticFeedback: HapticFeedback,
 )

@@ -59,6 +59,7 @@ import com.mrsep.musicrecognizer.feature.preferences.presentation.about.Software
 import com.mrsep.musicrecognizer.feature.recognition.presentation.queuescreen.RecognitionQueueScreen
 import com.mrsep.musicrecognizer.feature.recognition.presentation.queuescreen.RecognitionQueueScreen.navigateToQueueScreen
 import com.mrsep.musicrecognizer.feature.recognition.presentation.queuescreen.RecognitionQueueScreen.queueScreen
+import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.RecognitionRequest
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.RecognitionScreen
 import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.RecognitionScreen.recognitionScreen
 import com.mrsep.musicrecognizer.feature.track.presentation.lyrics.LyricsScreen.lyricsScreen
@@ -72,8 +73,8 @@ private const val SCREEN_TRANSITION_DURATION = 250
 @Composable
 internal fun AppNavigation(
     unviewedTracksCount: State<Int>,
-    recognitionRequested: Boolean,
-    setRecognitionRequested: (Boolean) -> Unit,
+    pendingRecognitionRequest: RecognitionRequest?,
+    setPendingRecognitionRequest: (RecognitionRequest?) -> Unit,
     shouldShowNavRail: Boolean,
     isExpandedScreen: Boolean,
     hideSplashScreen: () -> Unit
@@ -94,17 +95,18 @@ internal fun AppNavigation(
             activity.removeOnNewIntentListener(deeplinkListener)
         }
     }
+    val isRecognitionRequested = pendingRecognitionRequest != null
     // Conditional navigation for recognition request
     LaunchedEffect(
         optionalOuterEntry,
         optionalInnerEntry,
-        recognitionRequested,
+        isRecognitionRequested,
     ) {
         // optionalInnerEntry can be null, for example if nav graph is created with track deeplink
         val outerEntry = optionalOuterEntry ?: return@LaunchedEffect
         val innerEntry = optionalInnerEntry
         // navigate to recognition screen if recognition requested
-        if (recognitionRequested) {
+        if (isRecognitionRequested) {
             if (outerEntry.destination.route != BAR_HOST_ROUTE) {
                 outerNavController.popBackStack(BAR_HOST_ROUTE, inclusive = false)
                 return@LaunchedEffect
@@ -135,8 +137,8 @@ internal fun AppNavigation(
     ) {
         barNavHost(
             unviewedTracksCount = unviewedTracksCount,
-            recognitionRequested = recognitionRequested,
-            setRecognitionRequested = setRecognitionRequested,
+            pendingRecognitionRequest = pendingRecognitionRequest,
+            setPendingRecognitionRequest = setPendingRecognitionRequest,
             shouldShowNavRail = shouldShowNavRail,
             outerNavController = outerNavController,
             innerNavController = innerNavController
@@ -157,7 +159,7 @@ internal fun AppNavigation(
                 onNavigateToLyricsScreen = { trackId, from ->
                     outerNavController.navigateToLyricsScreen(trackId = trackId, from = from)
                 },
-                onRetryRequested = { setRecognitionRequested(true) }
+                onRetryRequested = { setPendingRecognitionRequest(RecognitionRequest.Retry) }
             )
             lyricsScreen(onBackPressed = outerNavController::navigateUp)
         }
@@ -187,8 +189,8 @@ private const val BAR_HOST_ROUTE = "bar_host"
 
 private fun NavGraphBuilder.barNavHost(
     unviewedTracksCount: State<Int>,
-    recognitionRequested: Boolean,
-    setRecognitionRequested: (Boolean) -> Unit,
+    pendingRecognitionRequest: RecognitionRequest?,
+    setPendingRecognitionRequest: (RecognitionRequest?) -> Unit,
     shouldShowNavRail: Boolean,
     outerNavController: NavController,
     innerNavController: NavHostController
@@ -212,8 +214,8 @@ private fun NavGraphBuilder.barNavHost(
                     VerticalDivider(modifier = Modifier.alpha(0.2f))
                 }
                 BarNavHost(
-                    recognitionRequested = recognitionRequested,
-                    setRecognitionRequested = setRecognitionRequested,
+                    pendingRecognitionRequest = pendingRecognitionRequest,
+                    setPendingRecognitionRequest = setPendingRecognitionRequest,
                     outerNavController = outerNavController,
                     innerNavController = innerNavController,
                     modifier = Modifier.weight(1f)
@@ -231,8 +233,8 @@ private fun NavGraphBuilder.barNavHost(
 
 @Composable
 private fun BarNavHost(
-    recognitionRequested: Boolean,
-    setRecognitionRequested: (Boolean) -> Unit,
+    pendingRecognitionRequest: RecognitionRequest?,
+    setPendingRecognitionRequest: (RecognitionRequest?) -> Unit,
     outerNavController: NavController,
     innerNavController: NavHostController,
     modifier: Modifier = Modifier
@@ -249,8 +251,8 @@ private fun BarNavHost(
             route = TopLevelDestination.Recognition.route
         ) {
             recognitionScreen(
-                autostart = recognitionRequested,
-                onResetAutostart = { setRecognitionRequested(false) },
+                pendingRecognitionRequest = pendingRecognitionRequest,
+                onResetPendingRecognitionRequest = { setPendingRecognitionRequest(null) },
                 onNavigateToTrackScreen = { trackId, from ->
                     outerNavController.navigateToTrackScreen(
                         trackId = trackId,

@@ -12,16 +12,16 @@ object RecognitionScreen {
     const val ROUTE = "recognition"
 
     fun NavGraphBuilder.recognitionScreen(
-        autostart: Boolean,
-        onResetAutostart: () -> Unit,
+        pendingRecognitionRequest: RecognitionRequest?,
+        onResetPendingRecognitionRequest: () -> Unit,
         onNavigateToTrackScreen: (trackId: String, from: NavBackStackEntry) -> Unit,
         onNavigateToQueueScreen: (recognitionId: Int?, from: NavBackStackEntry) -> Unit,
         onNavigateToPreferencesScreen: (from: NavBackStackEntry) -> Unit
     ) {
         composable(ROUTE) { backStackEntry ->
             RecognitionScreen(
-                autostart = autostart,
-                onResetAutostart = onResetAutostart,
+                pendingRecognitionRequest = pendingRecognitionRequest,
+                onResetPendingRecognitionRequest = onResetPendingRecognitionRequest,
                 onNavigateToTrackScreen = { trackId ->
                     onNavigateToTrackScreen(trackId, backStackEntry)
                 },

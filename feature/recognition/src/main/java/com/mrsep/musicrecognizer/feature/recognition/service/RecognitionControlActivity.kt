@@ -122,12 +122,14 @@ class RecognitionControlActivity : ComponentActivity() {
             return
         }
         lifecycleScope.launch {
-            if (action == ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST ||
+            if (action == ACTION_LAUNCH_RECOGNITION ||
+                action == ACTION_RETRY_RECOGNITION ||
                 action == TileService.ACTION_QS_TILE_PREFERENCES) {
                 loadCaptureModePreferences(action)
             }
             when (action) {
-                ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST,
+                ACTION_LAUNCH_RECOGNITION,
+                ACTION_RETRY_RECOGNITION,
                 TileService.ACTION_QS_TILE_PREFERENCES,
                 ACTION_SHOW_FLOATING_BUTTON -> {
                     checkAndRequestPermissions(action)
@@ -145,18 +147,23 @@ class RecognitionControlActivity : ComponentActivity() {
         val preferences = preferencesRepository.userPreferencesFlow.first()
         useAltDeviceSoundSource = preferences.useAltDeviceSoundSource
         requestedAudioCaptureMode = when (action) {
-            ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST -> {
+            ACTION_LAUNCH_RECOGNITION -> {
                 val intentMode = intent.getStringExtra(EXTRA_AUDIO_CAPTURE_MODE)?.let { modeName ->
                     runCatching { AudioCaptureMode.valueOf(modeName) }.getOrNull()
                 }
                 intentMode ?: preferences.defaultAudioCaptureMode
+            }
+            ACTION_RETRY_RECOGNITION -> {
+                preferences.lastUsedAudioCaptureMode
             }
             TileService.ACTION_QS_TILE_PREFERENCES -> {
                 val tileClassName = getClickedTileClassName(intent)
                 check(tileClassName == OneTimeRecognitionTileService::class.java.name)
                 preferences.mainButtonLongPressAudioCaptureMode
             }
-            else -> preferences.defaultAudioCaptureMode
+            else -> {
+                preferences.defaultAudioCaptureMode
+            }
         }
     }
 
@@ -177,7 +184,8 @@ class RecognitionControlActivity : ComponentActivity() {
 
     private fun onPermissionsGranted(action: String?) = when (action) {
         TileService.ACTION_QS_TILE_PREFERENCES,
-        ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST -> {
+        ACTION_LAUNCH_RECOGNITION,
+        ACTION_RETRY_RECOGNITION -> {
             onLaunchRecognition()
         }
         ACTION_SHOW_FLOATING_BUTTON -> {
@@ -330,7 +338,8 @@ class RecognitionControlActivity : ComponentActivity() {
     }
 
     companion object {
-        private const val ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST = "com.mrsep.musicrecognizer.control_activity.action.launch_recognition_permissions"
+        private const val ACTION_LAUNCH_RECOGNITION = "com.mrsep.musicrecognizer.control_activity.action.launch_recognition"
+        private const val ACTION_RETRY_RECOGNITION = "com.mrsep.musicrecognizer.control_activity.action.retry_recognition"
         private const val ACTION_SHOW_FLOATING_BUTTON = "com.mrsep.musicrecognizer.control_activity.action.show_floating_button"
         private const val KEY_INTENT_HANDLED = "key_intent_handled"
         private const val KEY_REQUESTED_CAPTURE_MODE = "key_requested_capture_mode"
@@ -350,7 +359,7 @@ class RecognitionControlActivity : ComponentActivity() {
             audioCaptureMode: AudioCaptureMode? = null
         ): Intent {
             return Intent(context, RecognitionControlActivity::class.java).apply {
-                action = ACTION_LAUNCH_RECOGNITION_WITH_PERMISSIONS_REQUEST
+                action = ACTION_LAUNCH_RECOGNITION
                 addFlags(FLAG_ACTIVITY_NEW_TASK)
                 if (audioCaptureMode != null) {
                     putExtra(EXTRA_AUDIO_CAPTURE_MODE, audioCaptureMode.name)
@@ -367,6 +376,23 @@ class RecognitionControlActivity : ComponentActivity() {
             return PendingIntent.getActivity(
                 context,
                 requestCode,
+                intent,
+                PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+            )
+        }
+
+        fun retryRecognitionWithPermissionRequestIntent(context: Context): Intent {
+            return Intent(context, RecognitionControlActivity::class.java).apply {
+                action = ACTION_RETRY_RECOGNITION
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
+            }
+        }
+
+        fun retryRecognitionWithPermissionRequestPendingIntent(context: Context): PendingIntent {
+            val intent = retryRecognitionWithPermissionRequestIntent(context)
+            return PendingIntent.getActivity(
+                context,
+                0,
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
             )

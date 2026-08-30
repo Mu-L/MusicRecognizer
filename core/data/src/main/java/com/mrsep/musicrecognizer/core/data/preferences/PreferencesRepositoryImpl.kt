@@ -64,6 +64,10 @@ internal class PreferencesRepositoryImpl @Inject constructor(
         safeWriter { mainButtonLongPressAudioCaptureMode = value.toProto() }
     }
 
+    override suspend fun setLastUsedAudioCaptureMode(value: AudioCaptureMode) {
+        safeWriter { lastUsedAudioCaptureMode = value.toProto() }
+    }
+
     override suspend fun setUsePrerecording(value: Boolean) {
         safeWriter { usePrerecording = value }
     }

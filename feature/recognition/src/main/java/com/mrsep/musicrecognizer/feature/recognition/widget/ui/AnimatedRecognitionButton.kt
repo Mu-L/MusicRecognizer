@@ -23,30 +23,23 @@ import androidx.glance.semantics.contentDescription
 import androidx.glance.semantics.semantics
 import com.mrsep.musicrecognizer.feature.recognition.R
 import com.mrsep.musicrecognizer.feature.recognition.widget.ui.RecognitionWidgetLayout.Companion.buttonScaleFactor
-import com.mrsep.musicrecognizer.core.strings.R as StringsR
 import com.mrsep.musicrecognizer.core.ui.R as UiR
 
 @Composable
 internal fun AnimatedRecognitionButton(
     isRecognizing: Boolean,
-    onLaunchRecognition: Action,
-    onCancelRecognition: Action,
+    onClick: Action,
+    onClickLabel: String,
     filledStyle: Boolean = true,
     scaledButtonSize: Dp,
 ) {
     val context = LocalContext.current
     val buttonScaleFactor = buttonScaleFactor()
-    val contentDescription = context.getString(
-        if (isRecognizing) StringsR.string.action_cancel_recognition
-        else StringsR.string.action_recognize
-    )
     Box(
         modifier = GlanceModifier
             .size(scaledButtonSize)
-            .clickable(
-                rippleOverride = -1,
-                onClick = if (isRecognizing) onCancelRecognition else onLaunchRecognition
-            ),
+            .semantics { this.contentDescription = onClickLabel }
+            .clickable(rippleOverride = -1, onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
         if (isRecognizing) {
@@ -67,7 +60,6 @@ internal fun AnimatedRecognitionButton(
                         isRecognizing = true,
                         contentSize = scaledButtonSize / buttonScaleFactor,
                         filledStyle = filledStyle,
-                        contentDescription = contentDescription,
                     )
                 }
                 Box {} // Used to change flipper states
@@ -77,23 +69,41 @@ internal fun AnimatedRecognitionButton(
                 isRecognizing = false,
                 contentSize = scaledButtonSize / buttonScaleFactor,
                 filledStyle = filledStyle,
-                contentDescription = contentDescription,
             )
         }
     }
 }
 
 @Composable
-internal fun RecognitionButtonContent(
+internal fun StaticRecognitionButton(
+    isRecognizing: Boolean,
+    onClick: Action,
+    onClickLabel: String,
+    filledStyle: Boolean = true,
+    buttonSize: Dp,
+) {
+    Box(
+        modifier = GlanceModifier
+            .semantics { this.contentDescription = onClickLabel }
+            .clickable(rippleOverride = -1, onClick = onClick)
+    ) {
+        RecognitionButtonContent(
+            isRecognizing = isRecognizing,
+            contentSize = buttonSize,
+            filledStyle = filledStyle,
+        )
+    }
+}
+
+@Composable
+private fun RecognitionButtonContent(
     isRecognizing: Boolean,
     contentSize: Dp,
     filledStyle: Boolean = true,
-    contentDescription: String,
 ) {
     Box(
         modifier = GlanceModifier
             .size(contentSize)
-            .semantics { this.contentDescription = contentDescription }
             .then(
                 if (filledStyle) {
                     GlanceModifier.background(ImageProvider(R.drawable.widget_recognition_button_shape))

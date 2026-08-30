@@ -7,6 +7,7 @@ import com.mrsep.musicrecognizer.core.domain.preferences.PreferencesRepository
 import com.mrsep.musicrecognizer.core.domain.preferences.ThemeMode
 import com.mrsep.musicrecognizer.core.domain.track.TrackRepository
 import com.mrsep.musicrecognizer.di.ServiceStarter
+import com.mrsep.musicrecognizer.feature.recognition.presentation.recognitionscreen.RecognitionRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -27,8 +28,8 @@ class MainActivityViewModel @Inject constructor(
     private val recognitionServiceStarter: ServiceStarter,
 ) : ViewModel() {
 
-    private val _recognitionRequested = MutableStateFlow(false)
-    val recognitionRequested = _recognitionRequested.asStateFlow()
+    private val _pendingRecognitionRequest = MutableStateFlow<RecognitionRequest?>(null)
+    val pendingRecognitionRequest = _pendingRecognitionRequest.asStateFlow()
 
     val unviewedTracksCount = trackRepository.getUnviewedCountFlow()
         .stateIn(
@@ -66,27 +67,23 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun setRecognitionRequested(requested: Boolean) {
-        if (requested) {
-            requestRecognition(ignoreStartupPreference = true)
-        } else {
-            _recognitionRequested.update { false }
+    fun setPendingRecognitionRequest(request: RecognitionRequest?) {
+        when (request) {
+            RecognitionRequest.Startup -> requestStartupRecognition(ignoreStartupUserPreference = true)
+            RecognitionRequest.Retry,
+            null -> _pendingRecognitionRequest.update { request }
         }
     }
 
-    fun requestRecognitionOnStartupIfPreferred() {
-        requestRecognition(ignoreStartupPreference = false)
-    }
-
-    private fun requestRecognition(ignoreStartupPreference: Boolean) {
+    fun requestStartupRecognition(ignoreStartupUserPreference: Boolean) {
         viewModelScope.launch {
             val state = uiState
                 .filterIsInstance<MainActivityUiState.Success>()
                 .first()
             val shouldRequest = state.onboardingCompleted &&
-                    (ignoreStartupPreference || state.recognizeOnStartup)
+                    (ignoreStartupUserPreference || state.recognizeOnStartup)
             if (shouldRequest) {
-                _recognitionRequested.update { true }
+                _pendingRecognitionRequest.update { RecognitionRequest.Startup }
             }
         }
     }

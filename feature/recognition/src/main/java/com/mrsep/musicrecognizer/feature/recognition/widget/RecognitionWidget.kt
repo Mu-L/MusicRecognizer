@@ -118,6 +118,7 @@ class RecognitionWidget : GlanceAppWidget() {
 
         val onLaunchRecognition = actionRunCallback<LaunchRecognition>()
         val onCancelRecognition = actionRunCallback<CancelRecognition>()
+        val onRetryRecognition = actionRunCallback<RetryRecognition>()
 
         provideContent {
             val widgetLayout = RecognitionWidgetLayout.fromLocalSize()
@@ -140,7 +141,7 @@ class RecognitionWidget : GlanceAppWidget() {
                     )
 
                     is RecognitionResult.NoMatches,
-                    RecognitionResult.NoSoundDetected -> onLaunchRecognition
+                    RecognitionResult.NoSoundDetected -> onRetryRecognition
 
                     is RecognitionResult.ScheduledOffline,
                     is RecognitionResult.Error -> actionRunCallback<ResetWidgetFinalState>()
@@ -167,6 +168,7 @@ class RecognitionWidget : GlanceAppWidget() {
                         uiState = widgetUiState,
                         onLaunchRecognition = onLaunchRecognition,
                         onCancelRecognition = onCancelRecognition,
+                        onRetryRecognition = onRetryRecognition,
                         onWidgetClick = onWidgetClick
                     )
 
@@ -175,6 +177,7 @@ class RecognitionWidget : GlanceAppWidget() {
                         uiState = widgetUiState,
                         onLaunchRecognition = onLaunchRecognition,
                         onCancelRecognition = onCancelRecognition,
+                        onRetryRecognition = onRetryRecognition,
                         onWidgetClick = onWidgetClick
                     )
 
@@ -183,6 +186,7 @@ class RecognitionWidget : GlanceAppWidget() {
                         uiState = widgetUiState,
                         onLaunchRecognition = onLaunchRecognition,
                         onCancelRecognition = onCancelRecognition,
+                        onRetryRecognition = onRetryRecognition,
                         onWidgetClick = onWidgetClick
                     )
                 }
@@ -246,6 +250,26 @@ internal class LaunchRecognition : ActionCallback {
         RecognitionControlService.startRecognitionWithPermissionFlow(
             context = context,
             audioCaptureMode = preferences.defaultAudioCaptureMode,
+            useAltDeviceSoundSource = preferences.useAltDeviceSoundSource,
+        )
+    }
+}
+
+internal class RetryRecognition : ActionCallback {
+
+    override suspend fun onAction(
+        context: Context,
+        glanceId: GlanceId,
+        parameters: ActionParameters,
+    ) {
+        val hiltEntryPoint = EntryPointAccessors.fromApplication(
+            context,
+            RecognitionWidgetEntryPoint::class.java
+        )
+        val preferences = hiltEntryPoint.preferencesRepository().userPreferencesFlow.first()
+        RecognitionControlService.startRecognitionWithPermissionFlow(
+            context = context,
+            audioCaptureMode = preferences.lastUsedAudioCaptureMode,
             useAltDeviceSoundSource = preferences.useAltDeviceSoundSource,
         )
     }

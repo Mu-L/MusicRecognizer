@@ -159,7 +159,7 @@ class ResultNotificationHelper @Inject constructor(
                             .bigText(bigText)
                     )
                     .setContentIntent(
-                        RecognitionControlActivity.startRecognitionWithPermissionRequestPendingIntent(appContext, usedAudioCaptureMode)
+                        RecognitionControlActivity.retryRecognitionWithPermissionRequestPendingIntent(appContext)
                     )
             }
 
@@ -180,7 +180,7 @@ class ResultNotificationHelper @Inject constructor(
                             .bigText(bigText)
                     )
                     .setContentIntent(
-                        RecognitionControlActivity.startRecognitionWithPermissionRequestPendingIntent(appContext, usedAudioCaptureMode)
+                        RecognitionControlActivity.retryRecognitionWithPermissionRequestPendingIntent(appContext)
                     )
             }
 

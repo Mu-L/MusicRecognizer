@@ -14,6 +14,7 @@ interface PreferencesRepository {
     suspend fun setAcrCloudConfig(value: AcrCloudConfig)
     suspend fun setDefaultAudioCaptureMode(value: AudioCaptureMode)
     suspend fun setMainButtonLongPressAudioCaptureMode(value: AudioCaptureMode)
+    suspend fun setLastUsedAudioCaptureMode(value: AudioCaptureMode)
     suspend fun setUsePrerecording(value: Boolean)
     suspend fun setUseAltDeviceSoundSource(value: Boolean)
     suspend fun setFallbackPolicy(value: FallbackPolicy)

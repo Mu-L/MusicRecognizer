@@ -10,6 +10,7 @@ data class UserPreferences(
     val acrCloudConfig: AcrCloudConfig,
     val defaultAudioCaptureMode: AudioCaptureMode,
     val mainButtonLongPressAudioCaptureMode: AudioCaptureMode,
+    val lastUsedAudioCaptureMode: AudioCaptureMode,
     val usePrerecording: Boolean,
     val useAltDeviceSoundSource: Boolean,
     val fallbackPolicy: FallbackPolicy,

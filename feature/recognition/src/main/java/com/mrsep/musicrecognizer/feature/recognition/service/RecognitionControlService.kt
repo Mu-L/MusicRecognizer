@@ -380,11 +380,12 @@ class RecognitionControlService : Service() {
                     }
 
                     is RecognitionStatus.Done -> {
+                        val usedAudioCaptureMode = audioCaptureServiceMode.toCaptureMode()
+                        preferencesRepository.setLastUsedAudioCaptureMode(usedAudioCaptureMode)
                         val recognitionResult = status.result
                         if (recognitionResult is RecognitionResult.Success) {
                             prepareTrackImages(recognitionResult.track)
                         }
-                        val usedAudioCaptureMode = audioCaptureServiceMode.toCaptureMode()
                         val isScreenUpdated = screenStatusHolder.updateStatusIfObserving(status)
                         if (isScreenUpdated) {
                             floatingButtonStatusHolder.updateStatus(RecognitionStatus.Ready)

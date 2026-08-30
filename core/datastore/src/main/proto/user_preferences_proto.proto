@@ -132,6 +132,8 @@ message UserPreferencesProto {
   optional bool use_prerecording = 48;
   bool floating_button_enabled = 49;
 
-  // NEXT AVAILABLE ID: 50
+  AudioCaptureModeProto last_used_audio_capture_mode = 50;
+
+  // NEXT AVAILABLE ID: 51
 
 }

@@ -18,6 +18,7 @@ import com.mrsep.musicrecognizer.feature.recognition.widget.WidgetUiState
 import com.mrsep.musicrecognizer.feature.recognition.widget.ui.RecognitionWidgetLayout.Companion.buttonHorizontalPadding
 import com.mrsep.musicrecognizer.feature.recognition.widget.ui.RecognitionWidgetLayout.Companion.dividerHorizontalPadding
 import com.mrsep.musicrecognizer.feature.recognition.widget.ui.RecognitionWidgetLayout.Companion.widgetPadding
+import com.mrsep.musicrecognizer.core.strings.R as StringsR
 
 @Composable
 internal fun HorizontalLayoutContent(
@@ -25,6 +26,7 @@ internal fun HorizontalLayoutContent(
     uiState: WidgetUiState,
     onLaunchRecognition: Action,
     onCancelRecognition: Action,
+    onRetryRecognition: Action,
     onWidgetClick: Action,
 ) {
     val context = LocalContext.current
@@ -43,6 +45,13 @@ internal fun HorizontalLayoutContent(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             when (val status = uiState.status) {
+                RecognitionStatus.Ready,
+                is RecognitionStatus.Recognizing -> StatusInfo(
+                    title = context.getWidgetTitleForStatus(status),
+                    subtitle = context.getWidgetSubtitleForStatus(status)
+                        .takeIf { !layout.isNarrow }
+                )
+
                 is RecognitionStatus.Done -> when (val result = status.result) {
                     is RecognitionResult.Success -> TrackInfoHorizontal(
                         track = result.track,
@@ -55,21 +64,34 @@ internal fun HorizontalLayoutContent(
                             .takeIf { !layout.isNarrow }
                     )
                 }
-                RecognitionStatus.Ready,
-                is RecognitionStatus.Recognizing -> StatusInfo(
-                    title = context.getWidgetTitleForStatus(status),
-                    subtitle = context.getWidgetSubtitleForStatus(status)
-                        .takeIf { !layout.isNarrow }
-                )
             }
             Spacer(GlanceModifier.width(dividerHorizontalPadding))
             VerticalDivider()
             Spacer(GlanceModifier.width(dividerHorizontalPadding))
             Spacer(GlanceModifier.width(buttonHorizontalPadding(layout.recognitionButtonMaxSize)))
+            val isRecognizing = uiState.status is RecognitionStatus.Recognizing
+            val shouldUseRetryAction = when (val status = uiState.status) {
+                is RecognitionStatus.Done -> when (status.result) {
+                    is RecognitionResult.NoMatches,
+                    RecognitionResult.NoSoundDetected -> true
+                    else -> false
+                }
+                else -> false
+            }
             AnimatedRecognitionButton(
-                isRecognizing = uiState.status is RecognitionStatus.Recognizing,
-                onLaunchRecognition = onLaunchRecognition,
-                onCancelRecognition = onCancelRecognition,
+                isRecognizing = isRecognizing,
+                onClick = when {
+                    isRecognizing -> onCancelRecognition
+                    shouldUseRetryAction -> onRetryRecognition
+                    else -> onLaunchRecognition
+                },
+                onClickLabel = context.getString(
+                    when {
+                        isRecognizing -> StringsR.string.action_cancel_recognition
+                        shouldUseRetryAction -> StringsR.string.button_retry_recognition
+                        else -> StringsR.string.action_recognize
+                    }
+                ),
                 scaledButtonSize = layout.recognitionButtonMaxSize
             )
             Spacer(GlanceModifier.width(buttonHorizontalPadding(layout.recognitionButtonMaxSize)))

@@ -55,12 +55,15 @@ internal fun CircleLayoutContent(
         ) {
             when (uiState.status) {
                 RecognitionStatus.Ready,
-                is RecognitionStatus.Recognizing,
-                -> {
+                is RecognitionStatus.Recognizing -> {
+                    val isRecognizing = uiState.status is RecognitionStatus.Recognizing
                     AnimatedRecognitionButton(
-                        isRecognizing = uiState.status is RecognitionStatus.Recognizing,
-                        onLaunchRecognition = onLaunchRecognition,
-                        onCancelRecognition = onCancelRecognition,
+                        isRecognizing = isRecognizing,
+                        onClick = if (isRecognizing) onCancelRecognition else onLaunchRecognition,
+                        onClickLabel = context.getString(
+                            if (isRecognizing) StringsR.string.action_cancel_recognition
+                            else StringsR.string.action_recognize
+                        ),
                         filledStyle = false,
                         scaledButtonSize = layout.recognitionButtonMaxSize
                     )

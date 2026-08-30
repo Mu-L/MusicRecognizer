@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
             val windowSizeClass = calculateWindowSizeClass(this)
             val uiState by viewModel.uiState.collectAsStateWithLifecycle()
             val darkTheme = shouldUseDarkTheme(uiState)
-            val recognitionRequested by viewModel.recognitionRequested.collectAsStateWithLifecycle()
+            val pendingRecognitionRequest by viewModel.pendingRecognitionRequest.collectAsStateWithLifecycle()
             val unviewedTracksCount = viewModel.unviewedTracksCount.collectAsStateWithLifecycle()
 
             MusicRecognizerTheme(
@@ -129,8 +129,8 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     AppNavigation(
                         unviewedTracksCount = unviewedTracksCount,
-                        recognitionRequested = recognitionRequested,
-                        setRecognitionRequested = viewModel::setRecognitionRequested,
+                        pendingRecognitionRequest = pendingRecognitionRequest,
+                        setPendingRecognitionRequest = viewModel::setPendingRecognitionRequest,
                         shouldShowNavRail = shouldShowNavRail(windowSizeClass),
                         isExpandedScreen = isExpandedScreen(windowSizeClass),
                         hideSplashScreen = { keepSplashScreen = false }
@@ -152,10 +152,10 @@ class MainActivity : ComponentActivity() {
 
     private fun handleRecognitionRequest(intent: Intent) {
         when (intent.action) {
-            ACTION_RECOGNIZE -> viewModel.setRecognitionRequested(true)
+            ACTION_RECOGNIZE -> viewModel.requestStartupRecognition(ignoreStartupUserPreference = true)
             ACTION_MAIN -> {
                 if (intent.getBooleanExtra(KEY_RESTART_ON_BACKUP_RESTORE, false)) return
-                viewModel.requestRecognitionOnStartupIfPreferred()
+                viewModel.requestStartupRecognition(ignoreStartupUserPreference = false)
             }
         }
     }
