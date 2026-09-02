@@ -290,7 +290,7 @@ class AuddRecognitionServiceTest {
     }
 
     @Test
-    fun `empty audio recording flow = BadRecording`() = scope.runTest {
+    fun `empty audio recording flow = NoSoundDetected`() = scope.runTest {
         val webSocketSession = object : WebSocketSession {
             override fun startReconnectingSession(
                 maxReconnectAttempts: Int,
@@ -307,7 +307,7 @@ class AuddRecognitionServiceTest {
         )
         val delayBeforeFlowClose = 5500L
         val result = service.recognizeUntilFirstMatch(emptyAudioRecordingFlow(delayBeforeFlowClose))
-        result.shouldBeInstanceOf<RemoteRecognitionResult.Error.BadRecording>()
+        result.shouldBeInstanceOf<RemoteRecognitionResult.NoSoundDetected>()
         testScheduler.currentTime.shouldBe(delayBeforeFlowClose)
     }
 

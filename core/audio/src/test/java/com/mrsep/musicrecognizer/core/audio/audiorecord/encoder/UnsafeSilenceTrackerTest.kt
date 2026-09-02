@@ -6,7 +6,7 @@ import org.junit.Test
 
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
-import java.time.Instant
+import kotlin.time.Instant
 
 class UnsafeSilenceTrackerTest {
 
@@ -25,8 +25,8 @@ class UnsafeSilenceTrackerTest {
         )
         currentTime = 500L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(0),
-            Instant.ofEpochMilli(500)
+            Instant.fromEpochMilliseconds(0),
+            Instant.fromEpochMilliseconds(500)
         )
         assertEquals(500.milliseconds, duration)
     }
@@ -40,8 +40,8 @@ class UnsafeSilenceTrackerTest {
         )
         currentTime = 500L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(0),
-            Instant.ofEpochMilli(500)
+            Instant.fromEpochMilliseconds(0),
+            Instant.fromEpochMilliseconds(500)
         )
         assertEquals(Duration.ZERO, duration)
     }
@@ -57,8 +57,8 @@ class UnsafeSilenceTrackerTest {
         tracker.onSilenceStateChanged(false)
         currentTime = 200L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(0),
-            Instant.ofEpochMilli(200)
+            Instant.fromEpochMilliseconds(0),
+            Instant.fromEpochMilliseconds(200)
         )
         assertEquals(100.milliseconds, duration)
     }
@@ -78,8 +78,8 @@ class UnsafeSilenceTrackerTest {
         tracker.onSilenceStateChanged(false)
         currentTime = 400L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(50),
-            Instant.ofEpochMilli(350)
+            Instant.fromEpochMilliseconds(50),
+            Instant.fromEpochMilliseconds(350)
         )
         assertEquals(150.milliseconds, duration)
     }
@@ -92,8 +92,8 @@ class UnsafeSilenceTrackerTest {
             currentTimeProvider = currentTimeProvider
         )
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(500),
-            Instant.ofEpochMilli(900)
+            Instant.fromEpochMilliseconds(500),
+            Instant.fromEpochMilliseconds(900)
         )
         assertEquals(Duration.ZERO, duration)
     }
@@ -109,8 +109,8 @@ class UnsafeSilenceTrackerTest {
         tracker.onSilenceStateChanged(true)
         currentTime = 200L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(250),
-            Instant.ofEpochMilli(350)
+            Instant.fromEpochMilliseconds(250),
+            Instant.fromEpochMilliseconds(350)
         )
         assertEquals(0.milliseconds, duration)
     }
@@ -125,8 +125,8 @@ class UnsafeSilenceTrackerTest {
         currentTime = 100L
         tracker.onSilenceStateChanged(false)
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(100),
-            Instant.ofEpochMilli(200)
+            Instant.fromEpochMilliseconds(100),
+            Instant.fromEpochMilliseconds(200)
         )
         assertEquals(Duration.ZERO, duration)
     }
@@ -144,8 +144,8 @@ class UnsafeSilenceTrackerTest {
         tracker.onSilenceStateChanged(true)
         currentTime = 250L
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(150),
-            Instant.ofEpochMilli(250)
+            Instant.fromEpochMilliseconds(150),
+            Instant.fromEpochMilliseconds(250)
         )
         assertEquals(50.milliseconds, duration)
     }
@@ -160,8 +160,8 @@ class UnsafeSilenceTrackerTest {
         currentTime = 100L
         tracker.onSilenceStateChanged(false)
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(50),
-            Instant.ofEpochMilli(150)
+            Instant.fromEpochMilliseconds(50),
+            Instant.fromEpochMilliseconds(150)
         )
         assertEquals(50.milliseconds, duration)
     }
@@ -174,8 +174,8 @@ class UnsafeSilenceTrackerTest {
             currentTimeProvider = currentTimeProvider
         )
         val duration = tracker.querySilenceDuration(
-            Instant.ofEpochMilli(100),
-            Instant.ofEpochMilli(100)
+            Instant.fromEpochMilliseconds(100),
+            Instant.fromEpochMilliseconds(100)
         )
         assertEquals(Duration.ZERO, duration)
     }

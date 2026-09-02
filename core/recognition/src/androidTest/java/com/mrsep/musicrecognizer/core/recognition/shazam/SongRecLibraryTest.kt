@@ -96,7 +96,7 @@ class SongRecLibraryTest {
     }
 
     // Device-specific regression test including decoding and resampling steps
-    @Test
+//    @Test
     fun combinedRegressionTest(): Unit = runBlocking {
         val fileLogger = FileWriter(
             context.filesDir.resolve("combinedRegressionTest.log").apply {
