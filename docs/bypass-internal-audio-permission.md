@@ -1,8 +1,8 @@
-# Bypass one-time permission requests for internal audio capture
+# Bypass permission requests for internal audio capture
 
 Audile uses the Android Media Projection API (screen casting) to capture device audio. This is the only official way to capture internal audio on Android. The Media Projection API is designed in such a way that we cannot request access to audio exclusively, which is why the system prompts for permission to record the entire screen. However, Audile does not record or process any visual data from your screen, as only internal audio is captured for music recognition purposes.
 
-By default, Android requires you to approve a one-time runtime permission request every time a new internal audio recording session starts. If you find this repetitive prompt annoying, you can grant Audile permanent access to capture internal audio by modifying the `PROJECT_MEDIA` AppOp. 
+By default, Android requires you to approve a one-time runtime permission request every time a new internal audio recording session starts. If you find this repetitive prompt annoying, you can grant Audile permanent access to capture internal audio. 
 
 *Note: You will still see the standard Android screencasting indicator in your status bar while the recording is active. Also, keep in mind that some apps restrict their own audio from being captured and the actions below do not allow you to bypass this.*
 
@@ -40,12 +40,12 @@ Below are several methods to grant this permission permanently.
 </details>
 
 <details>
-<summary><b>Method 3: Alternatives</b></summary>
+<summary><b>Alternatives</b></summary>
 
 If you do not have access to a PC, you can execute the necessary command directly on your device using one of the following approaches:
 
-*   **Wireless Debugging (Secondary Phone):** If you have a second Android device, you can connect them via Wireless Debugging and run the ADB command from the second device.
-*   **LADB (Local ADB):** Use an app like [LADB](https://github.com/tytydraco/ladb) to establish a local ADB shell directly on your phone, then run the command provided in Method 1.
+*   **Wireless Debugging:** If you have a second Android device, you can connect them via Wireless Debugging and run the ADB command from the second device.
+*   **Local ADB:** Use an app like [LADB](https://github.com/tytydraco/ladb) to establish a local ADB shell directly on your phone, then run the command provided in Method 1.
 *   **Root Access:** If your device is rooted, simply open a terminal emulator (such as [Termux](https://github.com/termux/termux-app)), request root access by typing `su`, and then execute:
     ```bash
     appops set com.mrsep.musicrecognizer PROJECT_MEDIA allow
